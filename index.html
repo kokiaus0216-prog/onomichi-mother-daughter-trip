@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#ffefe7">
+  <meta name="theme-color" content="#f6f1e7">
   <meta name="description" content="かえでとゆかの、はじめての母娘尾道旅行。旅程・写真・費用・持ち物をひとつに。">
   <title>初！母娘の尾道旅行 ♡ 旅のしおり</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@400;500&family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800&amp;family=Noto+Serif+JP:wght@500;600;700&amp;display=swap" rel="stylesheet">
   <style>
     :root { --cream:#fff9f2; --paper:#fffdf9; --ink:#554b4a; --muted:#918381; --pink:#f69da9; --deep:#dd7286; --pale:#fde6df; --aqua:#c9e9e8; --sea:#76bcc4; --sage:#9abd9d; --gold:#e8b46d; --line:#f0dfd5; --shadow:0 10px 38px rgba(127,85,78,.10); }
     * {box-sizing:border-box} html {scroll-behavior:smooth} body {margin:0;background:var(--cream);color:var(--ink);font-family:'Zen Maru Gothic',system-ui,sans-serif;font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased} button,input,textarea,select{font:inherit} button {cursor:pointer} a{color:inherit;text-decoration:none} .shell{max-width:850px;margin:auto;padding:0 18px 135px}
@@ -80,7 +80,50 @@
     @media(max-width:360px){.travel-point{grid-template-columns:minmax(0,1fr) 60px minmax(0,1fr);column-gap:4px}.axis-time{min-width:59px;max-width:63px;font-size:10.5px}.journey-place h3{font-size:12px}.journey-desc{font-size:10px}}
     @media(min-width:680px){.travel-point{grid-template-columns:minmax(0,1fr) 85px minmax(0,1fr);column-gap:16px;margin-bottom:25px}.journey-place,.journey-photo{padding:18px}.journey-place h3{font-size:17px}.journey-desc{font-size:13px}.journey-photo{min-height:205px}.live-panel{padding:16px 19px}.live-tile strong{font-size:15px}.live-tile b{font-size:20px}.axis-time{min-width:80px;max-width:90px;font-size:15px}}
     @media print{.now-pin,.timeline-rail,.live-panel,.journey-shortcuts{display:none!important}}
-</style>
+
+    /* Autumn editorial refresh: warm washi paper, vermilion, persimmon, chestnut */
+    :root{--cream:#f6f1e7;--paper:#fffdf8;--ink:#49372f;--muted:#806c5e;--pink:#a84d2b;--deep:#892c24;--pale:#f6e5d2;--aqua:#e1d2b6;--sea:#8d6b48;--sage:#77794e;--gold:#bf8a36;--line:#e5d7c5;--shadow:0 5px 20px rgba(76,52,29,.065)}
+    body{font-family:'Noto Sans JP',system-ui,sans-serif;background:var(--cream);font-weight:400;line-height:1.72;letter-spacing:.005em}
+    .hero{background:#ece0cc;border-radius:0 0 16px 16px;box-shadow:none;border-bottom:1px solid #d8c6ad}.hero::after{background:linear-gradient(transparent,#f6f1e7 89%)}.hero-title{padding-bottom:36px}
+    .hero-title h1,.section-head h2,.album-banner h3,.plan-head-title{font-family:'Noto Serif JP',serif!important;font-weight:600!important;color:#6c3027!important;letter-spacing:.035em;text-shadow:none}
+    .tiny-head{color:#855a43;letter-spacing:.23em}.pill{color:#654633;background:#fbf4e9;border-color:#d9c8b2;border-radius:5px;box-shadow:none}
+    .card{border-color:#e3d5c3;border-radius:9px;box-shadow:var(--shadow)}
+    .notice,.notice-blue{border:1px solid #d9c5ab;border-radius:8px;background:#fbf6ec;color:#604939;font-size:13px}
+    .notice-blue{background:#f7ebd8;border-color:#d6b990;color:#61442f}
+    .section-head h2{font-size:20px}.section-head .side{color:#856a53}
+    .day-switch button,.journey-shortcuts button{background:#fffaf1;border:1px solid #d7c4aa;border-radius:6px;color:#79523c;box-shadow:none}
+    .day-switch button.active,.journey-shortcuts button.active{background:#873d2b;color:white;border-color:#873d2b}
+    .live-panel{border:1px solid #cbb08a;background:rgba(250,244,234,.97);border-radius:10px;box-shadow:0 5px 18px rgba(81,45,18,.12)}
+    .live-header,.live-tile-label{color:#795d4a}.live-tile{border-radius:7px;border-color:#e1d1b9;background:#fff9ef}.live-tile.train-tile{background:#f4f0e4;border-color:#ddd0b8}
+    .live-tile.bus-tile{background:#f4efe4;border-color:#ddd0b8}.live-tile b,.train-tile b,.bus-tile b{color:#852e23}
+    .live-footer button,.btn{background:#973e29;border-radius:6px;box-shadow:none}.nav{background:#fbf7efed;border-top:1px solid #d6c4ab;box-shadow:0 -3px 12px #6c462014}
+    .nav button{color:#7c6654;border-radius:6px}.nav button.active{color:#853622;background:#efdfca}
+    .timeline-rail{background:repeating-linear-gradient(to bottom,#b98b5a 0px,#b98b5a 16px,#ece0cf 16px,#ece0cf 26px)}
+    .timeline-day>div{background:#7d3529;border-radius:6px;border:3px solid #f6f1e7;box-shadow:none;letter-spacing:.04em}
+    .travel-axis .axis-time{color:#772d23;font-family:'Noto Sans JP',sans-serif;font-weight:800;font-variant-numeric:tabular-nums}
+    .journey-place,.journey-photo{border-radius:8px;background:#fffdf9;box-shadow:0 3px 12px #70513714}
+    .journey-place h3{font-family:'Noto Serif JP',serif;font-weight:600;color:#4e372e;line-height:1.55}
+    .journey-desc{color:#68594d;line-height:1.72}.camera-label{color:#7d5546}
+    .small-label{background:#f6e9d9;color:#824e37;border-radius:3px}.small-label.blue{background:#f2e7d3;color:#85602a}
+    .chip-btn,.chip-btn.map,.chip-btn.photo,.mini-photo-btn,.mini-camera-btn{border-radius:5px;background:#f5ede1;border-color:#e0cbb2;color:#80523d}
+    .departure-countdown{background:#f7e9d7!important;border:1px solid #d6aa7b!important;color:#873822!important;border-radius:5px!important}
+    .departure-countdown.urgent{background:#8b3228!important;color:white!important}
+    .now-pin-circle{background:#cf3b2b!important;box-shadow:0 0 0 5px #f0dfca!important}
+    .now-pin-text{color:#a23d2b!important}
+    .transport-legend{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:0 3px 10px;color:#775b49;font-size:11px;font-weight:650}
+    .transport-legend span{display:flex;align-items:center;gap:5px}.transport-legend i{width:8px;height:8px;border-radius:50%;display:inline-block}.dot-checked{background:#557a52}.dot-pending{background:#c17e30}
+    .service-board{margin:8px 0;padding:9px 8px;background:#f7eddb;border:1px solid #dfbf8f;border-left:4px solid #a14a2e;border-radius:5px}
+    .service-board.service-unfixed{background:#faf4e8;border-color:#e0cfae;border-left-color:#bd852e}
+    .service-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px;color:#6e4937;font-size:10px;font-weight:750}
+    .service-status{font-size:9px;color:#8b5e27}
+    .service-places{display:grid;grid-template-columns:minmax(0,1fr) 12px minmax(0,1fr);gap:2px;align-items:end;padding:8px 0 5px}
+    .service-places>div{min-width:0}.service-places small{display:block;font-size:9px;color:#695240;white-space:normal;line-height:1.2}
+    .service-places b{display:block;font-size:18px;line-height:1.2;letter-spacing:-.035em;color:#702b22;font-weight:850;font-variant-numeric:tabular-nums}
+    .service-arrow{color:#956b4b;align-self:center;font-size:11px}.service-detail{font-size:10px;color:#6f5b4c;line-height:1.5;border-top:1px solid #e3cdae;padding-top:6px}
+    .travel-point:has(.has-service) .journey-place{border-color:#dbb28b}
+    @media(max-width:530px){.service-board{padding:6px 5px}.service-places b{font-size:15px}.service-places small{font-size:9px}.service-detail{font-size:9px}.service-top{font-size:9px}.journey-place h3{font-size:12.5px}.journey-desc{font-size:11.5px}}
+
+  </style>
 </head>
 <body>
   <header class="hero">
@@ -113,12 +156,14 @@
         </div>
         <div class="plan-head card">
           <div class="plan-head-title">🌼 かえでとゆか、のんびり母娘旅</div>
-          <p>28日は福山駅の周辺を少し散策して尾道へ。ランチと海辺を楽しんだらホテルでひと休み。18:00は新しく予約したお店で母娘ディナー♡ 新しいGoogleマップのリンクを登録しました。お店の住所が確認できるまでは、ホテルからの移動時間・ルートは未確定です。29日は神社・花束クレープ・器屋さん2軒をめぐる予定です。</p>
+          <p>28日は尾道ランチのあと烏須井八幡神社に参拝し、バスで三成のホテルへ。18:00は新しく予約したお店で夕食。29日はクレープと器屋さん巡り。公共交通の時刻は確定・候補を区別して表示しています。</p>
           <div class="plan-badges"><span>🚃 電車とバス</span><span>🚶 徒歩のみ</span><span>📷 各場所に写真を保存</span></div>
         </div>
         <p class="live-disclaimer">※ 赤い丸は予定時刻から計算した「いまの目安」です。GPSで実際の居場所を追跡するものではありません。時刻が「頃」の予定は概算です。</p>
-        <div class="notice-blue timetable-notice">🍽️ <strong>28日（土）18:00 新しい夕食店を予約済み：</strong>以前の店のアクセス案内は削除しました。<a href="https://maps.app.goo.gl/XZm1aioZoPKvcpZ7A?g_st=il" target="_blank" rel="noopener" style="text-decoration:underline">予約したお店をGoogleマップで確認 ↗</a>。短縮リンクから店名と所在地が取得できていないため、ホテルからの出発時刻・往復のバス停や徒歩時間は未確定です。店名が分かり次第、正しいルートに更新します。</div>
-        <div class="notice timetable-notice">🚌 <strong>29日（日）のバスは要確認：</strong>送ってくれた三成9:30頃の検索画像は11/30（月）のものです。日曜運行が未確認のため、当日は現地時刻表を確認してね。14時台の新尾道駅行きの便も要確認。</div>
+        <div class="transport-legend" aria-label="交通時刻の凡例"><span><i class="dot-checked"></i>予約済・時刻確認済</span><span><i class="dot-pending"></i>移動便は要調整</span></div>
+        <div class="notice-blue timetable-notice"><strong>28日（土）神社はランチの後へ変更：</strong>尾道駅に預けた荷物を回収し、ホテルへ向かう流れです。<b>15:30 尾道駅前 → 15:50 三成</b>の公式掲載便を候補にしました（14:50便もあり）。神社往復のバス接続が未確定なので、現在は「候補」として表示しています。 <a href="https://onomichibus.jp/wpcms/wp-content/uploads/2026/04/34aac455a2a9a57d9e6da48c81b54656-1.pdf" target="_blank" rel="noopener">公式時刻表を見る ↗</a></div>
+        <div class="notice timetable-notice"><strong>29日（日）の朝のバス：</strong>確認できたのは<b>三成9:05 → 新尾道9:15</b>。8:30のモーニングと両立するには時間がかなり短めです。送付画像の<b>9:30→9:36</b>は翌30日（月）の検索結果なので、日曜の運行としては掲載していません。<b>29日午後の新尾道行きも便・乗り場要確認</b>。<a href="https://onomichibus.jp/wpcms/wp-content/uploads/2026/04/34aac455a2a9a57d9e6da48c81b54656-1.pdf" target="_blank" rel="noopener">公式時刻表を見る ↗</a></div>
+        <div class="notice timetable-notice"><strong>28日18:00のディナーは予約済み。</strong>新しいお店の店名・住所が未確認のため、ホテルとの往復時間はまだ仮の表示です。<a href="https://maps.app.goo.gl/XZm1aioZoPKvcpZ7A?g_st=il" target="_blank" rel="noopener">新しいお店のGoogleマップ ↗</a></div>
         <div class="timeline section" id="timeline"></div>
       </div>
       <div class="section"><div class="section-head"><span class="icon">🚶</span><h2>バス・徒歩ルート案内</h2></div>
@@ -177,26 +222,28 @@
     {id:'shink-out',d:1,t:'10:15',i:'🚄',name:'博多駅から福山へ',desc:'11:41 福山駅着。新幹線 4号車 6C・6D席。WESTERポイント特典きっぷ（2名）。',tag:'予約済',map:'福山駅'},
     {id:'fukuyama',d:1,t:'11:41',i:'🚉',name:'福山駅周辺をちょこっと散策',desc:'11:41着。駅近くのお店をのぞいて、12:12発の在来線へ。約31分しかないので、12:00頃にはホームへ向かおう。',map:'福山駅'},
     {id:'localtrain',d:1,t:'12:12',i:'🚃',name:'JR山陽本線 福山 → 尾道',desc:'福山12:12発 → 尾道12:31着（約19分）。JR山陽本線。乗り遅れないようにホームを確認してね。',tag:'12:12→12:31',map:'尾道駅'},
-    {id:'onomichi-lockers',d:1,t:'12:35頃',i:'🧳',name:'JR尾道駅で荷物を預ける',desc:'コインロッカーなどを利用。空き状況は当日確認。15時前に忘れず回収してバスへ。',map:'JR尾道駅'},
-    {id:'lunch',d:1,t:'12:45〜',i:'🍳',name:'尾道でランチ',desc:'お好み焼き・尾道焼き候補。14:50のホテル行きバスに間に合うよう、ランチは長くても13:40頃までを目安に。',tag:'店選びはこれから',map:'尾道駅周辺 お好み焼き'},
-    {id:'sea',d:1,t:'13:45頃',i:'🌊',name:'尾道水道を眺めてお散歩',desc:'海辺の景色と母娘の記念写真♡ 徒歩で駅前エリアに戻れる範囲を中心に。',map:'尾道駅前 尾道水道'},
-    {id:'bus-on',d:1,t:'14:50',i:'🚌',name:'尾道駅前 4番乗り場 → 三成',desc:'おのみちバス・尾道工業団地線。土日祝14:50発→三成15:10着。駅で荷物を受け取って、14:40頃までに乗り場へ。',tag:'土日祝の公式時刻表',map:'尾道駅前 バス 4番乗り場'},
-    {id:'minari',d:1,t:'15:10',i:'📍',name:'三成バス停',desc:'ホテルへ徒歩約2分。',map:'三成 バス停 尾道市'},
-    {id:'hotel',d:1,t:'15:15頃',i:'🏡',name:'尾道のおばあちゃんとわたくしホテル',desc:'チェックインして、のんびり過ごそう♡',tag:'お泊まり',map:'尾道のおばあちゃんとわたくしホテル'},
+    {"id":"onomichi-lockers","d":1,"t":"12:35頃","i":"🧳","name":"尾道駅のロッカーに荷物を預ける","desc":"帰りに必ず回収する必要があります。神社の往復を組み込むため、ロッカーの空きと回収時刻に注意。","tag":"荷物回収は必須","map":"尾道駅"},
+    {"id":"sea","d":1,"t":"12:40頃","i":"🌊","name":"尾道水道を少しお散歩","desc":"ランチ前の短い海辺散歩。写真を1〜2枚撮る程度にして時間に余裕を残そう。","tag":"10〜15分程度の目安","map":"尾道駅前 海岸通り"},
+    {"id":"lunch","d":1,"t":"12:55頃","i":"🍳","name":"尾道でランチ","desc":"お好み焼き・尾道焼き候補。神社へ向かうため、13:30頃までの食事を想定。お店・待ち時間は未定。","tag":"お店・所要時間は未定","map":"尾道駅周辺 お好み焼き"},
+    {"id":"shrine-route","d":1,"t":"13:35頃","i":"🚌","name":"ランチ後、烏須井八幡神社へ","desc":"尾道市街地から栗原エリアへ、路線バス＋徒歩で移動する想定。乗り場・便・所要時間は未確認。神社と駅の往復、荷物回収、15:30バスの接続が成立するか要調整。","tag":"移動経路・発車時刻は未確定","map":"烏須井八幡神社 広島県尾道市西則末町11-31"},
+    {"id":"shrine","d":1,"t":"14:05頃","i":"⛩️","name":"烏須井八幡神社に参拝","desc":"希望どおり【1日目・ランチ後】に移動！ 到着時刻は路線バス接続次第の目安。写真を撮ってお参りしよう。","tag":"28日午後・到着時刻は仮","map":"烏須井八幡神社 広島県尾道市西則末町11-31"},
+    {"id":"return-lockers","d":1,"t":"14:30頃","i":"🧳","name":"尾道駅方面へ戻り荷物を回収","desc":"神社から駅への公共交通・徒歩ルートは未確定。15:30のバスに乗るなら15:20頃までに荷物を回収し、4番乗り場へ。間に合わなければ16:20発も公式時刻表上の候補。","tag":"最重要：神社→駅の接続を確認","map":"尾道駅"},
+    {"id":"bus-on","d":1,"t":"15:30","i":"🚌","name":"尾道駅前4番乗り場 → 三成","desc":"おのみちバス・尾道工業団地線（土日祝）。【15:30発→15:50着】公式時刻表に掲載。14:50発→15:10着もあり。神社往復＋荷物回収が間に合うかは未確定なので、この便も現時点では乗車候補。","tag":"公式時刻確認済／乗車は候補","map":"尾道駅前 バス 4番乗り場"},
+    {"id":"minari","d":1,"t":"15:50","i":"📍","name":"三成バス停に到着","desc":"15:30発のバスを使う場合の到着予定。ホテルはここから徒歩約2分。","tag":"15:30便に乗れた場合","map":"三成 バス停 尾道市"},
+    {"id":"hotel","d":1,"t":"15:55頃","i":"🏡","name":"尾道のおばあちゃんとわたくしホテル","desc":"15:30バスを使った場合の到着見込み。少し休憩。18:00ディナーの出発時刻は新しい店の住所が分かり次第調整します。","tag":"チェックイン","map":"尾道のおばあちゃんとわたくしホテル"},
     {id:'dinner-hotel-depart',d:1,t:'16:30頃',i:'👜',name:'夕食のお店へ向かう準備（仮）',desc:'18:00の予約に向け、ホテルからの公共交通と徒歩ルートを確認して出発しよう。新しいお店の住所がまだ取得できていないため、16:30は仮の目安です。',tag:'移動ルート・出発時刻は要確認',map:'https://maps.app.goo.gl/XZm1aioZoPKvcpZ7A?g_st=il'},
     {id:'dinner-pino',d:1,t:'18:00',i:'🍽️',name:'新しく予約したお店で母娘ディナー',desc:'🌷 11月28日（土）18:00、かえで・ゆかの夕食予約。「地図を開く」からお店を確認できます。店名・住所は確認でき次第追記します。',tag:'18:00 予約済み／店名確認待ち',map:'https://maps.app.goo.gl/XZm1aioZoPKvcpZ7A?g_st=il'},
     {id:'dinner-leave',d:1,t:'20:00頃',i:'🌃',name:'夕食後、ホテルへ（出発時間は仮）',desc:'食事が終わったら、地図で帰路を確認。新しいお店の所在地が未確認のため、帰りのバス便・徒歩時間は未確定です。',tag:'復路・時刻は要確認',map:'https://maps.app.goo.gl/XZm1aioZoPKvcpZ7A?g_st=il'},
     {id:'hotel-back',d:1,t:'21:00頃',i:'🏡',name:'ホテルに戻っておやすみなさい（仮）',desc:'ホテル到着時刻は新しい夕食店との距離・交通手段によって変わります。お部屋で今日撮った写真を見返そう♡',tag:'到着時刻は目安',map:'尾道のおばあちゃんとわたくしホテル'},
-    {id:'morning',d:2,t:'8:30',i:'☕',name:'尾道浪漫珈琲 三成店',desc:'旅先のモーニング。広島県尾道市美ノ郷町三成1192-3。',tag:'朝ごはん',map:'尾道浪漫珈琲 三成店'},
-    {id:'bus-return',d:2,t:'9:30頃',i:'🚌',name:'三成付近 → 新尾道駅',desc:'公共交通か徒歩で移動。画像の「9:30頃発」は11/30(月)検索で、11/29(日)の運行未確認。日曜は9:05三成発→9:15新尾道着の公式掲載便もあるため、モーニングと両立する便を再確認してね。',tag:'日曜ダイヤ要確認',map:'三成 バス停 尾道市'},
-    {id:'shinonomichi-lockers',d:2,t:'10:00頃',i:'🧳',name:'新尾道駅で荷物を預ける',desc:'コインロッカーへ預けて身軽に。新幹線15:28に乗る前に必ず回収してね。',map:'新尾道駅'},
-    {id:'shrine',d:2,t:'10:15頃',i:'⛩️',name:'烏須井八幡神社',desc:'うすいはちまんじんじゃ。新尾道駅から徒歩約14分。参拝・記念撮影のあと、路線バスで尾道市街へ。初日から2日目に移すと移動が少なくなるよ。',tag:'新尾道から徒歩',map:'烏須井八幡神社 広島県尾道市西則末町11-31'},
-    {id:'towntown',d:2,t:'11:00頃',i:'🚌',name:'神社周辺 → 尾道市街地へ',desc:'徒歩で新尾道駅周辺などのバス乗り場に出て、路線バスで尾道駅・土堂方面へ。接続と運賃は当日Googleマップで確認。',tag:'路線バス＋徒歩',map:'尾道市土堂2-2-14'},
+    {"id":"morning","d":2,"t":"8:30","i":"☕","name":"尾道浪漫珈琲 三成店で朝食","desc":"日曜8:00営業開始は公式サイトで確認済。9:05便に乗る場合、朝食は20分程度に限られるので徒歩移動時間も事前に確認。ゆっくり食べたい場合は別の乗り継ぎ案が必要。","tag":"8:30予定／乗り継ぎ注意","map":"尾道浪漫珈琲 三成店 広島県尾道市美ノ郷町三成1192-3"},
+    {"id":"bus-return","d":2,"t":"9:05（候補）","i":"🚌","name":"三成 → 新尾道駅のバス候補","desc":"おのみちバスの【日曜9:05発→9:15着】は公式時刻表で確認。8:30モーニング後だと非常にタイト。送付画像の9:30→9:36は11/30(月)の検索結果で、11/29(日)の運行は未確認。9:05便にするか別ルートにするか要決定。","tag":"9:05は時刻確認済／乗車未決定","map":"三成 バス停 尾道市"},
+    {"id":"shinonomichi-lockers","d":2,"t":"9:20頃","i":"🧳","name":"新尾道駅で荷物を預ける","desc":"9:05バスを利用した場合の時刻目安。駅のコインロッカーを使用。15:28の新幹線に乗る前に必ず回収。","tag":"朝の便により前後","map":"新尾道駅"},
+    {"id":"towntown","d":2,"t":"10:00頃","i":"🚌","name":"新尾道駅 → 尾道の街へ","desc":"2日目は神社には行かず、クレープと器屋さん巡りを中心に。市街地行きのバスは乗り場・時刻・運賃を確認中。","tag":"乗り場・発車時刻は未確定","map":"新尾道駅"},
     {id:'eternity',d:2,t:'11:30頃',i:'🍓',name:'エタニティでお花クレープ',desc:'尾道市土堂2-2-14。果物で花束のように仕上げるクレープ♡ 11:00開店の案内。人気店なので並ぶ場合は時間を調整。',tag:'行列・売り切れに注意',map:'エタニティ クレープ 尾道市土堂2-2-14'},
     {id:'day2-lunch',d:2,t:'12:20頃',i:'🍙',name:'お昼ごはん・商店街を散策',desc:'器屋さんは13時から開店。商店街周辺で軽めのランチや街並み散歩を楽しんでね。',tag:'軽めに',map:'尾道本通り商店街'},
     {id:'rhinoceros',d:2,t:'13:00頃',i:'🏺',name:'Rhinocéros（リノセロス）',desc:'尾道市長江1-10-9。古民家でうつわと暮らしの雑貨を探す♡ 13:00〜17:30の営業案内。坂・路地があるので歩きやすい靴で。',tag:'長江エリア・器屋さん',map:'Rhinocéros 尾道市長江1-10-9'},
     {id:'karhu',d:2,t:'13:35頃',i:'🫖',name:'うつわとくらしの道具カルフ',desc:'尾道市長江1-12-3 2階。リノセロスから徒歩で近いエリア。土日祝13:00〜17:00（公式）。14時頃までに買い物を切り上げ、帰りのバスへ。',tag:'土日祝13:00開店',map:'うつわとくらしの道具カルフ 尾道市長江1-12-3'},
-    {id:'backtoshin',d:2,t:'14:10〜',i:'🚌',name:'長江口付近 → 新尾道駅へ',desc:'長江経由の新尾道駅方面バスを利用。参考：日曜・尾道駅前5番乗り場14:20発の循環線（長江経由）の案内あり。長江口の正確な通過時刻と停留所を出発前に確認してね。',tag:'乗車時間を再確認',map:'長江口 バス停 尾道市'},
+    {"id":"backtoshin","d":2,"t":"14:10頃","i":"🚌","name":"長江周辺 → 新尾道駅へ","desc":"新幹線は15:28発。14時台の新尾道駅方面バスで移動する案だが、長江口の正確な乗車時刻は未確認。ロッカー回収の余裕を確保できる便を優先。","tag":"帰りのバス要確認","map":"長江口 バス停 尾道市"},
     {id:'return-shink',d:2,t:'15:28',i:'🚄',name:'こだま953号で博多へ',desc:'新尾道15:28発 → 博多17:51着。4号車5C・5D席（普通車禁煙）。2人分の旅行代金17,160円。ロッカーの荷物を忘れずに。',tag:'予約済',map:'新尾道駅'},
     {id:'hakata-goodbye',d:2,t:'17:51',i:'💐',name:'博多駅で母娘のお別れ',desc:'かえでは博多へ。ゆかは佐賀行き特急へ乗り換え（20分）。',map:'博多駅'},
     {id:'midori',d:2,t:'18:11',i:'🚃',name:'ゆか、特急みどりで佐賀へ',desc:'博多18:11発 → 佐賀18:56着。ゆかのみ／6号車3D席。',tag:'ゆかのみ',map:'佐賀駅'},
@@ -215,6 +262,15 @@
   function busy(on){$('#spinner').classList.toggle('show',on)}
   function photoCount(id){return photos.filter(p=>p.spotId===id).length}
   function stopName(id){return STOPS.find(s=>s.id===id)?.name||'旅の思い出'}
+  const TRAVEL_TIMES = {
+    "saga-out": {type:"JR",from:"佐賀",depart:"09:14",to:"博多",arrive:"09:50",detail:"3号車 11B／列車名は要確認",status:"利用予定"},
+    "shink-out": {type:"新幹線",from:"博多",depart:"10:15",to:"福山",arrive:"11:41",detail:"4号車 6C・6D／予約済",status:"予約済"},
+    "localtrain": {type:"JR山陽本線",from:"福山",depart:"12:12",to:"尾道",arrive:"12:31",detail:"在来線／番線は当日確認",status:"時刻確認済"},
+    "bus-on": {type:"路線バス",from:"尾道駅前",depart:"15:30",to:"三成",arrive:"15:50",detail:"4番乗り場／尾道工業団地線／14:50発もあり",status:"時刻確認済・乗車は候補"},
+    "bus-return": {type:"路線バス",from:"三成",depart:"09:05",to:"新尾道",arrive:"09:15",detail:"日曜ダイヤに掲載／朝食後の接続は厳しい",status:"乗車未決定"},
+    "return-shink": {type:"新幹線",from:"新尾道",depart:"15:28",to:"博多",arrive:"17:51",detail:"こだま953号／4号車 5C・5D",status:"予約済"},
+    "midori": {type:"JR特急",from:"博多",depart:"18:11",to:"佐賀",arrive:"18:56",detail:"ゆかのみ／みどり・6号車 3D",status:"利用予定"}
+  };
   const TRAIN_IDS = new Set(['saga-out','shink-out','localtrain','return-shink','midori']);
   const BUS_IDS = new Set(['bus-on']);
   // Times are interpreted in Japan Standard Time regardless of the viewer's time zone.
@@ -242,13 +298,17 @@
   function detailCard(s){
     const isTrain=TRAIN_IDS.has(s.id);
     const isBus=BUS_IDS.has(s.id);
-    const note=s.tag?`<span class="small-label ${s.tag.includes('確認')?'blue':''}">${escapeHTML(s.tag)}</span>`:'';
-    return `<div class="journey-place card" aria-label="${escapeHTML(s.name)}の予定">
+    const tr=TRAVEL_TIMES[s.id];
+    const isUnfixed=!!tr && /未決定|候補/.test(tr.status);
+    const note=s.tag?`<span class="small-label ${/要確認|未確定|候補|仮/.test(s.tag)?'blue':''}">${escapeHTML(s.tag)}</span>`:'';
+    const timeboard=tr?`<div class="service-board ${isUnfixed?'service-unfixed':'service-verified'}"><div class="service-top"><span>${escapeHTML(tr.type)}</span><span class="service-status">${escapeHTML(tr.status)}</span></div><div class="service-places"><div><small>${escapeHTML(tr.from)}</small><b>${escapeHTML(tr.depart)}</b></div><span class="service-arrow">→</span><div><small>${escapeHTML(tr.to)}</small><b>${escapeHTML(tr.arrive)}</b></div></div><div class="service-detail">${escapeHTML(tr.detail)}</div></div>`:'';
+    return `<div class="journey-place card ${tr?'has-service':''}" aria-label="${escapeHTML(s.name)}の予定">
       <h3>${escapeHTML(s.name)}</h3>
+      ${timeboard}
       <p class="journey-desc">${escapeHTML(s.desc)}</p>
       ${note}
       ${isTrain||isBus?`<div class="departure-countdown" data-departure="${s.id}">${isBus?'🚌':'🚄'} 発車まで --</div>`:''}
-      <div class="journey-actions"><a class="chip-btn map" href="${googleMap(s.map)}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHTML(s.name)}をGoogleマップで開く">📍 地図を開く ↗</a>
+      <div class="journey-actions"><a class="chip-btn map" href="${escapeHTML(googleMap(s.map))}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHTML(s.name)}をGoogleマップで開く">地図を開く ↗</a>
       <label class="travel-check"><input class="check" type="checkbox" data-check="${s.id}" ${checks[s.id]?'checked':''}>訪問チェック</label></div>
     </div>`;
   }
@@ -270,7 +330,7 @@
     let html='<div class="timeline-rail" aria-hidden="true"></div><div class="now-pin" id="nowPin" aria-label="現在時刻の位置"><span class="now-pin-circle"></span><span class="now-pin-text">いま</span></div>';
     STOPS.forEach((s,index)=>{
       if(s.d!==lastDay){
-        html+=`<div class="timeline-day" id="day-section-${s.d}"><div>${s.d===1?'🌸 11月28日（土）':'🌿 11月29日（日）'}<small>${s.d===1?'DAY 1 ・ 尾道へ出発':'DAY 2 ・ うつわと街歩き'}</small></div></div>`;
+        html+=`<div class="timeline-day" id="day-section-${s.d}"><div>${s.d===1?'🍁 11月28日（土）':'🍂 11月29日（日）'}<small>${s.d===1?'DAY 1 ・ 尾道と神社':'DAY 2 ・ うつわと街歩き'}</small></div></div>`;
         lastDay=s.d;
       }
       const left=index%2===0;
