@@ -1,15 +1,14 @@
 # かえでとゆかの母娘旅行 in尾道 🍁
 
-## 2人でリアルタイム編集する（Firebase）
+## ログイン不要で旅程をみんなで編集する（Firebase）
 
-- **[初回セットアップ手順](FIREBASE_SETUP.md)**：Googleログイン・Firestore・2人のアクセス権登録
-- `firebase-config.js` に **onomichi-trip-2026** のFirebase Webアプリ設定を反映済み。Googleログインの有効化とFirestoreの作成・セキュリティルール公開が必要。
-- 旅程は2人のスマホ間で同期。写真・費用・持ち物は今までどおり端末別保存のままです。
-- 最初の1人はログイン後「現在の旅程を共有開始」を押して初期データを作成してください。
-- Firestoreのアクセス制限は `firestore.rules` をFirebase Consoleへ貼り付けて公開します。GitHubにアップロードしただけでは適用されません。
+- **[Firebase初期設定（あと2つ）](FIREBASE_SETUP.md)**：Firebase Authenticationで「匿名」を有効化し、[firestore.rules](firestore.rules) をFirebase Consoleへ公開する。
+- GitHubの `firebase-config.js` は `onomichi-trip-2026` の設定に接続済み。
+- 旅行しおりの「旅程」画面に **「✏️ 旅程を追加・編集する」** を表示。認証設定後はログイン操作なしで自動接続・自動同期。
+- 「＋予定を追加」や各予定の「✎ 編集」から、日時・場所・交通・Googleマップの情報を変更可能。
+- **URLを知っている人は誰でも編集・削除可能**。個人情報や秘密を新たに登録しないようにする。ルールは旅行の旅程1件だけを許可する。
+- 写真・旅費・持ち物は今までどおり各端末で保存され、まだクラウド同期対象ではない。
 
-
-かえで＆ゆかの2026年11月28日（土）〜29日（日）の旅行しおり。GitHub Pagesでそのまま使えます。
 
 ## GitHub Pagesで公開する
 
