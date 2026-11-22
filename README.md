@@ -5,7 +5,7 @@
 ## GitHub Pagesで公開する
 
 1. リポジトリを作るか既存のリポジトリを開きます。
-2. ZIP内の `index.html` と `assets/onomichi-hero.webp` を**そのままの構成**でリポジトリのルートにアップロードします。
+2. ZIP内の `index.html` と `assets/onomichi-hero.svg` を**そのままの構成**でリポジトリのルートにアップロードします。
 3. GitHub `Settings → Pages → Build and deployment → Deploy from a branch` にし、`main` と `/(root)` を選択して保存します。
 4. `https://＜ユーザー名＞.github.io/＜リポジトリ名＞/` で公開できます。
 
@@ -35,7 +35,7 @@
 
 ## 利用について
 
-サイトは静的HTMLとオリジナル水彩画像で構成され、サーバー設定不要。Google Fontsに接続することがあります。Googleマップは別タブで開きます。鉄道・バスのリアルタイム運行情報やGPS位置検知はありません。
+サイトは静的HTMLとオリジナルイラストで構成され、サーバー設定不要。Google Fontsに接続することがあります。Googleマップは別タブで開きます。鉄道・バスのリアルタイム運行情報やGPS位置検知はありません。
 
 ## 28日(土) 夕食の交通メモ
 
