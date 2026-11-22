@@ -164,7 +164,7 @@
 .shared-body #sharedIdentity{background:#f7ebda;border-radius:6px;overflow-wrap:anywhere;padding:8px}
 .shared-controls{display:flex;gap:7px;flex-wrap:wrap}
 .shared-controls button,.shared-dialog-actions button{border:1px solid #c3a282;border-radius:6px;background:#fff7eb;color:#78422e;padding:9px 12px;font-size:12px;font-weight:800}
-.shared-controls button:disabled{opacity:.48}
+.shared-controls button:disabled{opacity:.48}.shared-controls #sharedAdd{font-size:14px;min-height:42px}.shared-panel[open]{outline:1px solid #d6b48d}
 .shared-controls button[hidden],.shared-body [hidden],.shared-transit[hidden],.shared-dialog-actions [hidden]{display:none!important}
 .shared-controls #sharedInit,.shared-controls #sharedEditMode,.shared-dialog-actions #sharedSave{color:white;background:#904333;border-color:#904333}
 .shared-edit-btn{display:none!important}
@@ -214,7 +214,7 @@ body.shared-editing .shared-edit-btn{display:inline-flex!important;align-items:c
           </div>
           <div class="live-footer"><span id="whereNow">旅程の時間に合わせて表示中</span><button id="jumpNow" type="button">🔴 現在位置を見る</button></div>
         </div>
-<details class="shared-panel" id="sharedPanel"><summary>✏️ ふたりで旅程を編集 <small id="sharedStatus">Firebase接続の準備中</small></summary><div class="shared-body"><p>Googleログインすると、編集内容が2人のスマホで自動同期されます。</p><p id="sharedIdentity" hidden></p><div class="shared-controls"><button id="sharedSignIn" type="button" disabled>Googleでログイン</button><button id="sharedSignOut" type="button" hidden>ログアウト</button><button id="sharedCopyUid" type="button" hidden>自分のUIDをコピー</button><button id="sharedInit" type="button" hidden>現在の旅程を共有開始</button><button id="sharedEditMode" type="button" hidden>編集モードをON</button><button id="sharedAdd" type="button" hidden>＋予定を追加</button></div><small id="sharedHelp">Firebaseの初期設定が終わるまでは、従来どおり旅程の閲覧と写真の保存ができます。</small></div></details>
+<details class="shared-panel" id="sharedPanel" open><summary>✏️ 旅程を追加・編集する <small id="sharedStatus">ゲストで接続中…</small></summary><div class="shared-body"><p>ログイン不要。予定の「✎ 編集」や「＋予定を追加」から変更すると、ほかのスマホにも自動反映されるよ。</p><p id="sharedIdentity" hidden></p><div class="shared-controls"><button id="sharedSignIn" type="button" hidden disabled>Googleでログイン</button><button id="sharedSignOut" type="button" hidden>ログアウト</button><button id="sharedCopyUid" type="button" hidden>自分のUIDをコピー</button><button id="sharedInit" type="button" hidden>現在の旅程を共有開始</button><button id="sharedEditMode" type="button" hidden>編集モードをON</button><button id="sharedAdd" type="button" hidden>＋予定を追加</button></div><small id="sharedHelp">初回のみ管理者によるFirebaseの「匿名」認証とFirestoreルール設定が必要です。URLを知っている人なら誰でも編集できる点に注意してね。</small></div></details>
         <div class="transport-legend" aria-label="交通時刻の凡例"><span><i class="dot-checked"></i>予約済・時刻確認済</span><span><i class="dot-pending"></i>移動便は要調整</span></div>
         
         <section class="quick-trip" id="quickTrip" aria-label="旅程の時刻一覧"></section>
