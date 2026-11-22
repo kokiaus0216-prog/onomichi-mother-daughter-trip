@@ -217,11 +217,7 @@ body.shared-editing .shared-edit-btn{display:inline-flex!important;align-items:c
 <details class="shared-panel" id="sharedPanel"><summary>✏️ ふたりで旅程を編集 <small id="sharedStatus">Firebase接続の準備中</small></summary><div class="shared-body"><p>Googleログインすると、編集内容が2人のスマホで自動同期されます。</p><p id="sharedIdentity" hidden></p><div class="shared-controls"><button id="sharedSignIn" type="button" disabled>Googleでログイン</button><button id="sharedSignOut" type="button" hidden>ログアウト</button><button id="sharedCopyUid" type="button" hidden>自分のUIDをコピー</button><button id="sharedInit" type="button" hidden>現在の旅程を共有開始</button><button id="sharedEditMode" type="button" hidden>編集モードをON</button><button id="sharedAdd" type="button" hidden>＋予定を追加</button></div><small id="sharedHelp">Firebaseの初期設定が終わるまでは、従来どおり旅程の閲覧と写真の保存ができます。</small></div></details>
         <div class="transport-legend" aria-label="交通時刻の凡例"><span><i class="dot-checked"></i>予約済・時刻確認済</span><span><i class="dot-pending"></i>移動便は要調整</span></div>
         
-        <section class="quick-trip" aria-label="旅程の時刻一覧">
-<div class="quick-intro"><div><small>TRAVEL SCHEDULE</small><h3>2日間の予定をひと目で</h3></div><span>🍁</span></div>
-<div class="quick-day"><h4>11月28日（土）｜尾道・神社・HOK STAND</h4><div class="quick-line "><time>09:14</time><div>佐賀 → 博多<small>ゆかのみ／09:50着／3号車11B</small></div></div><div class="quick-line reserved"><time>10:15</time><div>博多 → 福山<small>11:41着／新幹線4号車6C・6D</small></div></div><div class="quick-line "><time>12:12</time><div>福山 → 尾道<small>12:31着／JR山陽本線</small></div></div><div class="quick-line "><time>12:55</time><div>尾道でランチ<small>食事後に烏須井八幡神社へ／移動は要確認</small></div></div><div class="quick-line key"><time>14:50</time><div>尾道駅前4番乗り場 → 三成<small>15:10着／尾道工業団地線・300円（1人）</small></div></div><div class="quick-line key"><time>17:15</time><div>三成 → 尾道駅前<small>17:38着／徒歩約18〜25分で夕食へ</small></div></div><div class="quick-line reserved"><time>18:00</time><div>HOK STAND<small>夕食予約済み／尾道市久保1-2-24</small></div></div><div class="quick-line key"><time>21:08</time><div>尾道駅前 → 三成<small>21:23着／ホテルまで徒歩約2分</small></div></div></div><div class="quick-day"><h4>11月29日（日）｜朝食・街歩き・帰路</h4><div class="quick-line "><time>08:30</time><div>尾道浪漫珈琲 三成店<small>モーニング</small></div></div><div class="quick-line "><time>09:28</time><div>ホテル → 三成バス停<small>徒歩2分・120m／荷物を持って出発</small></div></div><div class="quick-line key"><time>09:30</time><div>三成バス停 → 新尾道駅<small>尾道・三成線／9:36着／190円・1人</small></div></div><div class="quick-line "><time>10:00</time><div>新尾道で荷物預け<small>市街へ移動・エタニティと器屋さん巡り</small></div></div><div class="quick-line reserved"><time>15:28</time><div>新尾道 → 博多<small>こだま953号／17:51着／4号車5C・5D</small></div></div><div class="quick-line "><time>18:11</time><div>博多 → 佐賀<small>ゆかのみ／18:56着／みどり6号車3D</small></div></div></div>
-<p class="quick-footnote"><b>色の見方：</b>朱色＝重要なバス、薄い生成色＝予約済み、黄色＝乗車・運行を要確認。詳細と写真登録はこの下の縦型タイムラインから。</p>
-</section>
+        <section class="quick-trip" id="quickTrip" aria-label="旅程の時刻一覧"></section>
         <div class="timeline section" id="timeline"></div>
       </div>
       <div class="section"><div class="section-head"><span class="icon">🚶</span><h2>バス・徒歩ルート案内</h2></div>
@@ -460,7 +456,25 @@ body.shared-editing .shared-edit-btn{display:inline-flex!important;align-items:c
       <button class="mini-camera-btn" type="button" data-camera="${s.id}">📸 カメラで撮る</button>
     </div>`;
   }
+  function renderOverview(){
+    const chosen=new Set(['saga-out','shink-out','localtrain','lunch','shrine','bus-on','dinner-bus-out','dinner-pino','dinner-bus-back','morning','bus-return','eternity','rhinoceros','karhu','return-shink','midori']);
+    const dayPanel=(d,label)=>{
+      const list=STOPS.filter(s=>s.d===d&&(chosen.has(s.id)||s.id.startsWith('custom-')));
+      const rows=list.map(s=>{
+        const tr=s.transport||TRAVEL_TIMES[s.id];
+        const kind=s.kind||(TRAIN_IDS.has(s.id)?'train':BUS_IDS.has(s.id)?'bus':'other');
+        const type=/予約済/.test(s.tag||'')||/予約済/.test(tr?.status||'')?'reserved':kind==='bus'?'key':'';
+        const subtitle=tr?(tr.from||'')+' → '+(tr.to||'')+'・'+(tr.depart||s.t)+'発'+(tr.arrive?'／'+tr.arrive+'着':'')+(tr.detail?'　'+tr.detail:''):(s.tag||s.desc||'').slice(0,105);
+        return '<div class="quick-line '+type+'"><time>'+escapeHTML(s.t)+'</time><div>'+escapeHTML(s.name)+'<small>'+escapeHTML(subtitle)+'</small></div></div>';
+      }).join('');
+      return '<div class="quick-day"><h4>'+label+'</h4>'+(rows||'<div class="quick-line">まだ予定がありません</div>')+'</div>';
+    };
+    const el=$('#quickTrip');
+    if(!el)return;
+    el.innerHTML='<div class="quick-intro"><div><small>TRAVEL SCHEDULE</small><h3>2日間の予定をひと目で</h3></div><span>🍁</span></div>'+dayPanel(1,'11月28日（土）｜尾道・神社・ディナー')+dayPanel(2,'11月29日（日）｜街歩き・帰路')+'<p class="quick-footnote">予約済みの交通・観光は各予定で確認。より詳しい道順や写真登録は下のタイムラインから。</p>';
+  }
   function renderTimeline(){
+    renderOverview();
     const done=STOPS.filter(s=>checks[s.id]).length;
     $('#progressText').textContent=`${done}/${STOPS.length} スポット`;
     let lastDay=0;
