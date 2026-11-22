@@ -123,7 +123,31 @@
     .travel-point:has(.has-service) .journey-place{border-color:#dbb28b}
     @media(max-width:530px){.service-board{padding:6px 5px}.service-places b{font-size:15px}.service-places small{font-size:9px}.service-detail{font-size:9px}.service-top{font-size:9px}.journey-place h3{font-size:12.5px}.journey-desc{font-size:11.5px}}
 
-  </style>
+  
+    /* Compact full-width overview + editorial typesetting for narrow screens */
+    .quick-trip{margin:17px 0 25px;border:1px solid #d9c4ab;border-radius:8px;background:#fffcf6;box-shadow:0 3px 16px #49372f10;overflow:hidden}
+    .quick-intro{display:flex;align-items:center;justify-content:space-between;padding:17px 19px 12px;border-bottom:1px solid #eadbca}
+    .quick-intro small{font-size:10px;letter-spacing:.16em;color:#8b6348;font-weight:700}.quick-intro h3{font-family:'Noto Serif JP',serif;color:#703528;margin:4px 0;font-size:19px}.quick-intro>span{font-size:27px}
+    .quick-day{padding:16px}.quick-day+.quick-day{border-top:8px solid #f2e7d8}.quick-day h4{font-family:'Noto Serif JP',serif;color:#713a2b;font-size:15px;margin:0 0 9px}
+    .quick-line{display:grid;grid-template-columns:58px minmax(0,1fr);gap:12px;align-items:baseline;padding:11px 8px;border-bottom:1px solid #eee5db}
+    .quick-line:last-child{border:0}.quick-line time{font-size:18px;line-height:1.15;font-weight:800;font-variant-numeric:tabular-nums;color:#863527;letter-spacing:-.02em}
+    .quick-line>div{color:#46372e;font-size:14px;font-weight:700;line-height:1.45;min-width:0}
+    .quick-line small{display:block;font-weight:400;color:#806d5f;font-size:11px;line-height:1.55;padding-top:4px}
+    .quick-line.key{background:#f5e5d6;border-radius:5px;border-color:transparent}.quick-line.reserved{background:#f3ede3;border-radius:5px;border-color:transparent}
+    .quick-line.pending{background:#fcf2e2;border-left:3px solid #c18b3f}
+    .quick-footnote{margin:0;padding:12px 18px 15px;background:#f8f1e7;border-top:1px solid #e5d4bd;font-size:11px;line-height:1.65;color:#775e4c}
+    @media(max-width:550px){
+      .quick-trip{margin:12px -2px 22px}.quick-day{padding:13px 11px}.quick-line{grid-template-columns:55px minmax(0,1fr);gap:8px;padding:11px 5px}.quick-line time{font-size:17px}.quick-line>div{font-size:13px}
+      .travel-point{grid-template-columns:minmax(0,1fr) 57px minmax(0,1fr);column-gap:4px}
+      .journey-place,.journey-photo{padding:10px 7px}
+      .travel-axis .axis-time{font-size:11px}
+      .journey-place h3{font-size:12px;line-height:1.4}
+      .journey-desc{font-size:10.5px;line-height:1.55}
+      .service-board{padding:6px 5px}.service-places{grid-template-columns:minmax(0,1fr) 8px minmax(0,1fr);gap:0}
+      .service-board .service-places b{font-size:14px}.service-detail{font-size:9px}.service-status{font-size:8px}
+      .chip-btn,.mini-photo-btn,.mini-camera-btn{font-size:10px!important}
+    }
+</style>
 </head>
 <body>
   <header class="hero">
@@ -142,8 +166,8 @@
       <div class="section">
         <div class="section-head"><span class="icon">🧳</span><h2>旅のスケジュール</h2><span class="side" id="progressText"></span></div>
         <div class="journey-shortcuts" aria-label="しおりの目次">
-          <button type="button" data-jumpday="1">🌸 11/28（土）に移動</button>
-          <button type="button" data-jumpday="2">🌿 11/29（日）に移動</button>
+          <button type="button" data-jumpday="1">🍁 11/28（土）に移動</button>
+          <button type="button" data-jumpday="2">🍂 11/29（日）に移動</button>
         </div>
         <div class="live-panel card" id="livePanel">
           <div class="live-header"><span class="live-eyebrow"><span class="live-red-dot"></span> 旅の現在地・リアルタイム</span><span id="japanClock">日本時間 --:--</span></div>
@@ -165,6 +189,11 @@
         <div class="notice-blue timetable-notice"><b>11/28（土）</b>：ランチ後に烏須井八幡神社→尾道駅で荷物回収→<b>15:30尾道駅前発／15:50三成着</b>（神社からの乗り継ぎは要確認）。<a href="https://onomichibus.jp/wpcms/wp-content/uploads/2026/04/34aac455a2a9a57d9e6da48c81b54656-1.pdf" target="_blank" rel="noopener">土曜時刻表 ↗</a></div>
         <div class="notice timetable-notice"><b>11/28（土）夕食はHOK STAND・18:00予約済み。</b>三成17:15→尾道駅17:38の土曜バス＋徒歩約18〜25分を想定。到着が予約直前になるため、余裕を増やす場合はホテル滞在の時間調整が必要。<a href="https://maps.app.goo.gl/XZm1aioZoPKvcpZ7A?g_st=il" target="_blank" rel="noopener">お店の地図 ↗</a></div>
         <div class="notice timetable-notice"><b>11/29（日）</b>：希望の<b>9:28頃移動開始→三成9:30発→新尾道9:36着</b>を登録。ただし送付画像は11/30（月）の検索結果なので<b>日曜の運行未確認</b>。休日ダイヤに掲載されている三成9:05→新尾道9:15便は、8:30朝食からの乗り継ぎが難しそう。</div>
+        <section class="quick-trip" aria-label="旅程の時刻一覧">
+<div class="quick-intro"><div><small>TRAVEL SCHEDULE</small><h3>2日間の予定をひと目で</h3></div><span>🍁</span></div>
+<div class="quick-day"><h4>11月28日（土）｜尾道・神社・HOK STAND</h4><div class="quick-line "><time>09:14</time><div>佐賀 → 博多<small>ゆかのみ／09:50着／3号車11B</small></div></div><div class="quick-line reserved"><time>10:15</time><div>博多 → 福山<small>11:41着／新幹線4号車6C・6D</small></div></div><div class="quick-line "><time>12:12</time><div>福山 → 尾道<small>12:31着／JR山陽本線</small></div></div><div class="quick-line "><time>12:55</time><div>尾道でランチ<small>食事後に烏須井八幡神社へ／移動は要確認</small></div></div><div class="quick-line pending"><time>15:30</time><div>尾道駅前 → 三成<small>15:50着／神社から接続できるか要確認</small></div></div><div class="quick-line key"><time>17:15</time><div>三成 → 尾道駅前<small>17:38着／徒歩約18〜25分で夕食へ</small></div></div><div class="quick-line reserved"><time>18:00</time><div>HOK STAND<small>夕食予約済み／尾道市久保1-2-24</small></div></div><div class="quick-line key"><time>21:08</time><div>尾道駅前 → 三成<small>21:23着／ホテルまで徒歩約2分</small></div></div></div><div class="quick-day"><h4>11月29日（日）｜朝食・街歩き・帰路</h4><div class="quick-line "><time>08:30</time><div>尾道浪漫珈琲 三成店<small>モーニング</small></div></div><div class="quick-line pending"><time>09:28</time><div>三成から新尾道へ<small>9:30バス発→9:36着を希望／日曜運行未確認</small></div></div><div class="quick-line "><time>10:00</time><div>新尾道で荷物預け<small>市街へ移動・エタニティと器屋さん巡り</small></div></div><div class="quick-line reserved"><time>15:28</time><div>新尾道 → 博多<small>こだま953号／17:51着／4号車5C・5D</small></div></div><div class="quick-line "><time>18:11</time><div>博多 → 佐賀<small>ゆかのみ／18:56着／みどり6号車3D</small></div></div></div>
+<p class="quick-footnote"><b>色の見方：</b>朱色＝重要なバス、薄い生成色＝予約済み、黄色＝乗車・運行を要確認。詳細と写真登録はこの下の縦型タイムラインから。</p>
+</section>
         <div class="timeline section" id="timeline"></div>
       </div>
       <div class="section"><div class="section-head"><span class="icon">🚶</span><h2>バス・徒歩ルート案内</h2></div>
