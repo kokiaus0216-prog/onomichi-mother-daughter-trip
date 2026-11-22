@@ -487,7 +487,7 @@ body.shared-editing .shared-edit-btn{display:inline-flex!important;align-items:c
       const left=index%2===0;
       html+=`<article class="travel-point ${left?'place-left':'place-right'} ${checks[s.id]?'is-done':''}" id="spot-${s.id}" data-stop="${s.id}">
         <div class="travel-side">${left?detailCard(s):cameraCard(s)}</div>
-        <div class="travel-axis"><span class="axis-time">${escapeHTML(s.t)}</span><span class="axis-icon">${s.i}</span></div>
+        <div class="travel-axis"><span class="axis-time">${escapeHTML(s.t)}</span><span class="axis-icon">${escapeHTML(s.i)}</span></div>
         <div class="travel-side">${left?cameraCard(s):detailCard(s)}</div>
       </article>`;
     });
