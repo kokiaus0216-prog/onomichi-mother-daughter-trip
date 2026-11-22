@@ -152,6 +152,37 @@
 .hero-title h1{font-family:'M PLUS Rounded 1c','Noto Sans JP',sans-serif!important;font-weight:900!important;color:#8c352b!important;letter-spacing:-.055em!important;line-height:1.4!important;font-size:clamp(27px,5.9vw,48px)!important;text-shadow:2px 3px 0 #fff5e5!important;overflow-wrap:anywhere}
 .hero-title h1 .mark{font-family:inherit!important;color:#b96220!important;font-size:.8em!important;letter-spacing:-.045em!important}
 @media(max-width:440px){.hero-title h1{font-size:clamp(26px,7.1vw,34px)!important;letter-spacing:-.07em!important}}
+
+/* Two-person shared itinerary editor - autumn styling */
+.shared-panel{margin:12px 0 16px;background:#fffaf2;border:1px solid #d7bea1;border-radius:8px;box-shadow:0 3px 12px #68472b0c;overflow:hidden}
+.shared-panel>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px 15px;cursor:pointer;color:#85402e;font-weight:800;font-size:14px}
+.shared-panel>summary::-webkit-details-marker{display:none}
+.shared-panel>summary small{font-size:10px;line-height:1.4;color:#806b56;font-weight:500;max-width:46%;text-align:right}
+.shared-body{border-top:1px solid #e9dbcb;padding:10px 15px 16px}
+.shared-body p{font-size:12px;line-height:1.65;color:#705c4d;margin:3px 0 11px}
+.shared-body>small{display:block;color:#856c57;font-size:11px;line-height:1.55;margin-top:10px}
+.shared-body #sharedIdentity{background:#f7ebda;border-radius:6px;overflow-wrap:anywhere;padding:8px}
+.shared-controls{display:flex;gap:7px;flex-wrap:wrap}
+.shared-controls button,.shared-dialog-actions button{border:1px solid #c3a282;border-radius:6px;background:#fff7eb;color:#78422e;padding:9px 12px;font-size:12px;font-weight:800}
+.shared-controls button:disabled{opacity:.48}
+.shared-controls button[hidden],.shared-body [hidden],.shared-transit[hidden],.shared-dialog-actions [hidden]{display:none!important}
+.shared-controls #sharedInit,.shared-controls #sharedEditMode,.shared-dialog-actions #sharedSave{color:white;background:#904333;border-color:#904333}
+.shared-edit-btn{display:none!important}
+body.shared-editing .shared-edit-btn{display:inline-flex!important;align-items:center;background:#f6e6d2!important;color:#77432c!important;border:1px solid #d0ad89!important}
+.shared-dialog{border:1px solid #cbb196;background:#fffaf2;color:#403129;border-radius:11px;box-shadow:0 16px 70px #39231166;padding:0;width:min(92vw,540px);max-height:88vh}
+.shared-dialog::backdrop{background:#3022199c}
+.shared-dialog form{padding:18px;overflow-y:auto;max-height:85vh}
+.shared-dialog h3{color:#803e2e;font-family:'M PLUS Rounded 1c','Noto Sans JP',sans-serif;font-size:19px;margin:0 0 14px;font-weight:800}
+.shared-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.shared-grid label{font-size:11px;color:#674d3e;font-weight:700;display:flex;flex-direction:column;gap:4px;min-width:0}
+.shared-grid .wide{grid-column:1/-1}
+.shared-grid input,.shared-grid textarea,.shared-grid select{background:white;border:1px solid #dac5b0;border-radius:6px;color:#403129;padding:9px;font-size:14px;font-weight:500;min-width:0;width:100%}
+.shared-transit{border-top:1px solid #e1d0b9;margin-top:15px;padding-top:13px}
+.shared-transit>strong{display:block;margin-bottom:11px;color:#7d452e;font-size:13px}
+#sharedError{color:#a1362e;font-size:12px;min-height:1em;margin:12px 0 4px}
+.shared-dialog-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end;margin-top:12px}
+.shared-dialog-actions #sharedDelete{margin-right:auto;color:#a53e32;border-color:#c78377}
+@media(max-width:520px){.shared-panel>summary{font-size:12.5px;padding:11px}.shared-dialog form{padding:14px}.shared-dialog h3{font-size:17px}.shared-dialog-actions button{padding:9px;font-size:11px}}
 </style>
 </head>
 <body>
