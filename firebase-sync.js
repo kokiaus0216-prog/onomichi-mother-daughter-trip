@@ -5,7 +5,7 @@ const bridge = window.OnomichiTripBridge;
 const TRIP_PATH = ['trips', 'onomichi-2026', 'itinerary', 'main'];
 const LOCKED_TRAVEL = new Set(['saga-out','shink-out','localtrain','bus-on','bus-return','dinner-bus-out','dinner-bus-back','return-shink','midori']);
 let auth, db, api, snapshotUnsubscribe=null, currentUser=null, sharedReady=false, editMode=false;
-let itineraryRef=null, saving=false;
+let itineraryRef=null, saving=false, autoSigningIn=false, attemptedInit=false;
 
 function status(text){if($('sharedStatus'))$('sharedStatus').textContent=text;}
 function help(text){if($('sharedHelp'))$('sharedHelp').textContent=text;}
@@ -18,23 +18,21 @@ function editModeSet(on){
   show('sharedAdd',editMode);
 }
 function refreshActions(){
-  show('sharedSignIn',!currentUser);
-  show('sharedSignOut',!!currentUser);
-  show('sharedCopyUid',!!currentUser);
+  // Guest editing: all users are silently authenticated as anonymous visitors.
+  show('sharedSignIn',false);
+  show('sharedSignOut',false);
+  show('sharedCopyUid',false);
+  show('sharedInit',false);
+  show('sharedIdentity',false);
   show('sharedEditMode',!!currentUser&&sharedReady);
-  show('sharedInit',!!currentUser&&!sharedReady);
   if(!sharedReady)editModeSet(false);
-  if(currentUser){
-    $('sharedIdentity').textContent='ログイン中：'+(currentUser.email||currentUser.displayName||'Googleアカウント')+' ／ UID：'+currentUser.uid;
-    show('sharedIdentity',true);
-  } else {show('sharedIdentity',false);}
 }
 function errorMessage(error){
   const code=String(error?.code||'');
-  if(code.includes('permission-denied'))return 'このGoogleアカウントには旅程の閲覧・編集権限がありません。自分のUIDをコピーして、Firebaseのルールに追加してね。';
+  if(code.includes('permission-denied'))return 'Firestoreのセキュリティルールが未設定か、公開されていません。Firebase ConsoleのFirestore → ルールで設定してね。';
   if(code.includes('popup-blocked')||code.includes('popup-closed-by-user'))return 'Googleログイン画面を開けませんでした。SafariまたはChromeでサイトを直接開いて試してね。';
   if(code.includes('unauthorized-domain'))return 'Firebase認証の承認済みドメインに kokiaus0216-prog.github.io を追加してね。';
-  if(code.includes('operation-not-allowed'))return 'Firebase AuthenticationでGoogleログインを有効にしてね。';
+  if(code.includes('operation-not-allowed'))return 'Firebase Authentication → ログイン方法で「匿名」を有効にしてね。';
   return '処理できませんでした：'+(error?.message||String(error));
 }
 function timeValue(text){
@@ -197,7 +195,7 @@ async function startSharing(){
         updatedAt:api.serverTimestamp()
       });
     });
-    help('共有旅程を作成しました。両方のスマホでGoogleログインすると同期されます。');
+    help('共有旅程を作成しました。このサイトを開いている人のスマホに自動反映されます。');
   }catch(e){status('初期登録に失敗');help(errorMessage(e));}
   finally{$('sharedInit').disabled=false;}
 }
@@ -211,8 +209,9 @@ function listen(user){
   snapshotUnsubscribe=api.onSnapshot(itineraryRef,snap=>{
     if(!snap.exists()){
       sharedReady=false;editModeSet(false);refreshActions();
-      status('共有旅程を初期登録してね');
-      help('最初の1人だけ「現在の旅程を共有開始」を押してね。2人目はログインするだけでOK。');
+      status('共有旅程を自動作成中…');
+      help('初回アクセスのため旅程を作成しています。');
+      if(!attemptedInit){attemptedInit=true;void startSharing();}
       return;
     }
     const items=snap.data().items;
@@ -223,8 +222,9 @@ function listen(user){
       return;
     }
     sharedReady=true;refreshActions();
-    status(snap.metadata.hasPendingWrites?'変更を同期中…':'共有中・最新');
-    help('2人が編集した予定は自動同期されます。写真と旅費メモは今までどおり端末別の保存です。');
+    if(!editMode)editModeSet(true);
+    status(snap.metadata.hasPendingWrites?'変更を同期中…':'共有中・編集できます');
+    help('ログイン不要。予定を追加・編集するとほかのスマホにも反映されます。公開URLを知っている人なら誰でも旅程を変更できます。写真・旅費メモは端末別保存です。');
   },error=>{
     sharedReady=false;editModeSet(false);refreshActions();
     status('共有旅程へアクセスできません');
@@ -247,11 +247,11 @@ async function boot(){
   if(!bridge){status('サイトの読み込みに失敗');return;}
   if(!firebaseConfig||!firebaseConfig.apiKey||!firebaseConfig.projectId||!firebaseConfig.appId){
     status('Firebase未接続（閲覧のみ）');
-    help('編集・同期を使うには、管理者がFirebaseプロジェクトを作り firebase-config.js を設定する必要があります。');
+    help('管理者がFirebase設定を完了するまで旅程の閲覧はできます。');
     return;
   }
   try{
-    status('Firebaseを接続中…');
+    status('ゲスト接続を準備中…');
     const version='13.4.0';
     const base='https://www.gstatic.com/firebasejs/'+version+'/';
     const [fa,au,fs]=await Promise.all([
@@ -262,17 +262,32 @@ async function boot(){
     auth=au.getAuth(app);
     db=fs.getFirestore(app);
     itineraryRef=fs.doc(db,...TRIP_PATH);
-    $('sharedSignIn').disabled=false;
-    au.onAuthStateChanged(auth,user=>{
-      if(snapshotUnsubscribe){snapshotUnsubscribe();snapshotUnsubscribe=null;}
-      currentUser=user;
-      sharedReady=false;editModeSet(false);refreshActions();
-      if(user){listen(user);}
-      else{
-        bridge.apply(bridge.getDefaults());
-        status('Googleログインで共有編集');
-        help('2人とも同じFirebaseプロジェクトに接続し、各UIDをアクセスルールに登録してね。');
+    au.onAuthStateChanged(auth,async user=>{
+      if(user?.isAnonymous){
+        if(snapshotUnsubscribe){snapshotUnsubscribe();snapshotUnsubscribe=null;}
+        currentUser=user;
+        sharedReady=false;editModeSet(false);refreshActions();
+        status('旅程を同期中…');
+        listen(user);
+        return;
       }
+      // Do not ask the visitor to log in. Existing Google sessions are signed out
+      // for this app and replaced with a persistent Firebase anonymous identity.
+      if(autoSigningIn)return;
+      autoSigningIn=true;
+      currentUser=null;sharedReady=false;refreshActions();
+      status('ログイン不要で接続中…');
+      try{
+        if(user)await au.signOut(auth);
+        await au.signInAnonymously(auth);
+      }catch(error){
+        status('ゲスト接続ができません');
+        help(errorMessage(error));
+        $('sharedPanel').open=true;
+      }finally{autoSigningIn=false;}
+    },error=>{
+      status('認証設定を確認してね');
+      help(errorMessage(error));
     });
   }catch(e){
     status('Firebase接続エラー');
