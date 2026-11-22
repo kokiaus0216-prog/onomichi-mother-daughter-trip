@@ -3,7 +3,7 @@
 ## 2人でリアルタイム編集する（Firebase）
 
 - **[初回セットアップ手順](FIREBASE_SETUP.md)**：Googleログイン・Firestore・2人のアクセス権登録
-- `firebase-config.js` にFirebase Webアプリの設定を入れると「✏️ ふたりで旅程を編集」が有効になります（現在は未設定）。
+- `firebase-config.js` に **onomichi-trip-2026** のFirebase Webアプリ設定を反映済み。Googleログインの有効化とFirestoreの作成・セキュリティルール公開が必要。
 - 旅程は2人のスマホ間で同期。写真・費用・持ち物は今までどおり端末別保存のままです。
 - 最初の1人はログイン後「現在の旅程を共有開始」を押して初期データを作成してください。
 - Firestoreのアクセス制限は `firestore.rules` をFirebase Consoleへ貼り付けて公開します。GitHubにアップロードしただけでは適用されません。
