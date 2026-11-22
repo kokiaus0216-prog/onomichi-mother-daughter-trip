@@ -1,92 +1,50 @@
-# かえでとゆかの母娘旅行 in尾道｜2人で旅程を共有編集する設定
+# かえでとゆかの母娘旅行 in尾道 — ログイン不要の共有旅程
 
-サイトURL： https://kokiaus0216-prog.github.io/onomichi-mother-daughter-trip/
+サイト: https://kokiaus0216-prog.github.io/onomichi-mother-daughter-trip/
 
-## ここまで実装済み
+**方式:** Firebase Authentication「匿名」の自動ログイン ＋ Cloud Firestore リアルタイム同期。
 
-- 2人のGoogleログイン（Firebase Authentication）
-- Firestoreの共有旅程（同じ旅行データをリアルタイム監視）
-- 日付・時刻・場所・Googleマップ・説明の編集と、予定の追加・削除
-- 鉄道・バスなら発着駅・発着時刻・座席等の情報も編集
-- 更新内容を中央タイムラインと上部の「2日間の予定をひと目で」に反映
-- 変更時の同時編集競合を軽減するFirestoreトランザクション
-- 重要な交通予定の時刻変更時には確認
-- 未接続でも従来のしおりを表示（既存の写真・費用管理も維持）
+Googleアカウントへのログイン操作もUID登録も不要です。URLを知っている訪問者は誰でも旅程を閲覧・編集・追加・削除できます。写真・旅費・持ち物は従来どおり端末ごとの保存です。
 
-**重要：コードは完成していますが、Firebaseプロジェクトへの接続設定はまだです。** 初期設定完了後、両者のスマホで同期が開始します。
+GitHubのコードは実装済みですが、Firebase管理画面で次の **2つの設定** を公開するまでは、同期は開始されません。
 
-## ステップ1：Firebaseプロジェクトを作成する
+## ① Firebase Authenticationで匿名認証を有効化
 
-1. https://console.firebase.google.com/ を開く
-2. 「プロジェクトを追加」で専用のプロジェクトを作る（例：onomichi-trip-2026）
-3. 「プロジェクトの設定」→「マイアプリ」→ウェブアプリ「</>」を追加
-4. 表示される firebaseConfig の `apiKey`, `authDomain`, `projectId`, `appId` 等をコピーする
-5. GitHubの `firebase-config.js` の `null` を次のようなオブジェクトに置き換える：
+1. [Firebase認証・ログイン方法](https://console.firebase.google.com/project/onomichi-trip-2026/authentication/providers) を開く
+2. 「新しいプロバイダを追加」→「匿名（Anonymous）」を選ぶ
+3. 「有効にする」をオン →「保存」
 
-```js
-export const firebaseConfig = {
-  apiKey: "Firebase Consoleで表示された値",
-  authDomain: "プロジェクトID.firebaseapp.com",
-  projectId: "プロジェクトID",
-  storageBucket: "必要ならFirebase Consoleの値",
-  messagingSenderId: "Firebase Consoleの値",
-  appId: "Firebase Consoleの値"
-};
-```
+既に有効にした「Google」プロバイダはそのままでもOK。アプリはログイン画面を表示せず匿名認証を行います。
 
-Webアプリの Firebase 設定は公開用のクライアント設定です。**サービスアカウントJSON、秘密鍵、管理者用トークン、パスワードは絶対にGitHubへ置かないでください。** 実際のアクセス可否は認証とFirestoreルールで決まります。
+## ② Firestoreにアクセスルールを公開
 
-## ステップ2：Googleログインの設定
+1. [Firestoreルール](https://console.firebase.google.com/project/onomichi-trip-2026/firestore/rules) を開く
+2. 既存の内容を **[firestore.rules](./firestore.rules)** のテキストに置き換える
+3. 「公開（Publish）」を押す
 
-1. Firebase Console → Authentication → Sign-in method → Googleを有効にする
-2. Authentication → Settings → Authorized domains で次のドメインを追加
-   `kokiaus0216-prog.github.io`
-3. GitHub PagesのサイトをSafariまたはChromeで直接開く
-4. しおりの「✏️ ふたりで旅程を編集」を開き「Googleでログイン」をタップ
-5. かえで・ゆかがそれぞれのGoogleアカウントでログインする
-6. それぞれ「自分のUIDをコピー」でFirebase AuthのUIDを取得する
+**注意:** GitHub上の `firestore.rules` の更新だけでは、Firestore本体のルールは変わりません。Consoleで公開する必要があります。
 
-**この時点ではまだ「アクセス権がありません」と表示されても正常です。** ルールにUIDを登録していないためです。
+このルールは、匿名認証された人に **旅行の旅程文書1件のみ** 読み書きを許可します。ほかのデータパスは許可しません。旅程文書自体は一般公開に近い状態となり、荒らしや削除のリスクがあります。秘密・住所・予約番号・パスワードなどを旅程に含めないでください。個人の旅行情報がすでにHTMLソースに含まれている点にも注意してください。
 
-※ iPhoneのLINE内ブラウザではログインポップアップが制限される場合があるため、Safariでの利用を推奨します。
+## ③ 旅行しおりで操作
 
-## ステップ3：Cloud Firestoreを作成し、アクセスルールを設定
+1. サイトをSafari/Chromeで開き、更新（リロード）する
+2. 「旅程」タブに、開いた状態の **「✏️ 旅程を追加・編集する」** が表示される
+3. Firebaseに自動で接続し「共有中・編集できます」に変わる
+4. 各予定の「✎ 編集」から修正。「＋予定を追加」で新しいスポットを追加する
+5. 反映された内容は別のスマホにも自動で表示される
+6. 最初のアクセス時には既存の旅程を自動でFirestoreに保存する
 
-1. Firebase Console → Firestore Database → 「データベースを作成」
-2. 本番（Production）モードを選択（全公開のテストルールにはしない）
-3. Firestore → Rules（ルール）を開く
-4. リポジトリの `firestore.rules` にある内容をコピーする
-5. `REPLACE_WITH_KAEDE_UID`, `REPLACE_WITH_YUKA_UID` をそれぞれコピーしたUIDへ置き換える
-6. 管理者も編集したい場合だけ、`REPLACE_WITH_OWNER_UID_IF_NEEDED` をそのUIDに置き換える。管理者不要なら最後の条件を削除する
-7. Publish（公開）を押す
+「ゲスト接続ができません」なら匿名認証、「共有旅程へアクセスできません」ならFirestoreルールを確認してください。最新ルールの反映には時間がかかる場合があります。
 
-**注意：** `firestore.rules` はGitHubに置くだけではFirebaseへ適用されません。Firestore Consoleの Rules画面で公開してください。既存のFirebaseプロジェクトにほかのアプリがある場合は、ほかのルールを消してしまわないように注意してください。
+## 安全に使うための注意
 
-## ステップ4：2人の同期を開始する
+- 公開URLを知っている人は全員編集可能。URLは信頼できる相手にのみ送る。ただし、**リンクを秘密にするだけでは安全なアクセス制限にはなりません**。
+- 編集前にしおりサイトのバックアップ機能で写真・メモなどを保存することをおすすめします。共有旅程自体の変更履歴からの復元機能は未実装です。
+- 鉄道の予約情報をサイト上で変更しても、実際の切符・予約内容は変わりません。
+- 写真アルバムのFirebase共有・LINE通知はまだ未実装。写真は端末内にのみ保存されます。
+- Firebaseの利用量には無料枠と制限があり、公開編集は第三者の利用による費用・データ改変リスクがあります。必要ならFirebase App Checkや編集可能な相手を限定する方式を検討してください。
 
-1. かえでかゆかのどちらかが、サイトを更新してGoogleログインする
-2. 「現在の旅程を共有開始」を1回だけ押す（Firestoreに初期旅程をコピー）
-3. もう一人がログインすると、同じ旅程が自動表示される
-4. 「編集モードをON」を押すと、各予定に「✎ 編集」ボタンが出る
-5. 内容を変更し「2人の旅程に保存」を押すと、相手のスマホにも自動反映される
-6. 「＋予定を追加」から新しい行き先やカフェ等を追加できる
-
-同時に編集しても、Firestoreのトランザクションがデータの競合を軽減します。ただし、**同じ予定を同時編集した場合は後から保存した変更が優先**されます。
-
-## データの扱いと注意点
-
-- **今回同期されるのは旅程だけ。** 写真アルバム・旅費・持ち物チェックは、これまでどおり各端末に保存され、まだ2人で自動同期はしません。
-- GitHub Pages自体は公開サイトです。既存の初期旅程、名前、座席番号などはHTMLソースにも入っているため、Firebaseのルールを設定しても**既存の掲載情報まで非公開になるわけではありません**。閲覧自体も2人に限定したい場合は、サイト構成の変更が必要です。
-- 無関係なGoogleアカウントでもGoogleログイン画面は開けますが、UIDをルールに登録していない限りFirestoreへの読み書きはできません。
-- Firebaseの利用料は使用量・プランによって異なります。利用枠と課金設定を確認し、必要ならGoogle Cloudの予算アラートを設定してください。
-- サイトの「現在」マーカーは時刻からの推定で、GPSの現在地追跡や交通機関の遅延検知ではありません。
-- Firestoreには編集者名と更新時刻が保存されます。LINEグループ通知はこの段階ではまだ実装していません。
-
-## 公式ドキュメント
-
-- Firebase Webアプリ設定：https://firebase.google.com/docs/web/setup
-- Googleログイン：https://firebase.google.com/docs/auth/web/google-signin
-- Firestoreのリアルタイム更新：https://firebase.google.com/docs/firestore/query-data/listen
-- Firestoreセキュリティ：https://firebase.google.com/docs/firestore/security/get-started
-
-Firebase Web SDK 13.4.0（2026-11-16公開）を利用しています。
+公式:
+- https://firebase.google.com/docs/auth/web/anonymous-auth
+- https://firebase.google.com/docs/firestore/security/get-started
