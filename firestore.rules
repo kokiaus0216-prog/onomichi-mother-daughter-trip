@@ -1,31 +1,37 @@
 rules_version = '2';
 
+// Public-link editing for the Onomichi travel itinerary.
+// Anybody visiting the public site can obtain Firebase anonymous credentials,
+// then read, add, edit, or remove itinerary items. Do not store private data here.
+// Only the exact itinerary document is available; other documents stay denied.
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isTripEditor() {
-      return request.auth != null && (
-        request.auth.uid == "REPLACE_WITH_KAEDE_UID" ||
-        request.auth.uid == "REPLACE_WITH_YUKA_UID" ||
-        request.auth.uid == "REPLACE_WITH_OWNER_UID_IF_NEEDED"
-      );
+    function isAnonymousVisitor() {
+      return request.auth != null
+        && request.auth.token.firebase.sign_in_provider == 'anonymous';
     }
 
-    // This is one document, watched in real time by both authorized travelers.
-    match /trips/onomichi-2026/itinerary/main {
-      allow get: if isTripEditor();
-      allow list: if false;
-      allow create, update: if isTripEditor()
-        && request.resource.data.keys().hasOnly(
-          ['items','schemaVersion','updatedAt','updatedBy','updatedName'])
+    function validItinerary() {
+      return request.resource.data.keys().hasOnly(
+          ['items', 'schemaVersion', 'updatedAt', 'updatedBy', 'updatedName'])
+        && request.resource.data.keys().hasAll(
+          ['items', 'schemaVersion', 'updatedAt', 'updatedBy', 'updatedName'])
         && request.resource.data.items is list
         && request.resource.data.items.size() <= 100
         && request.resource.data.schemaVersion == 1
-        && request.resource.data.updatedBy == request.auth.uid;
+        && request.resource.data.updatedBy == request.auth.uid
+        && request.resource.data.updatedName is string
+        && request.resource.data.updatedName.size() <= 100
+        && request.resource.data.updatedAt is timestamp;
+    }
+
+    match /trips/onomichi-2026/itinerary/main {
+      allow get: if isAnonymousVisitor();
+      allow list: if false;
+      allow create, update: if isAnonymousVisitor() && validItinerary();
       allow delete: if false;
     }
 
-    // This example intentionally denies all other reads and writes.
-    // Merge carefully with existing application rules if reusing a project.
     match /{document=**} {
       allow read, write: if false;
     }
