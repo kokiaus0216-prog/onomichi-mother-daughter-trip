@@ -1,9 +1,8 @@
 rules_version = '2';
 
-// Public-link editing for the Onomichi travel itinerary.
-// Anybody visiting the public site can obtain Firebase anonymous credentials,
-// then read, add, edit, or remove itinerary items. Do not store private data here.
-// Only the exact itinerary document is available; other documents stay denied.
+// Public-link itinerary and small shared photos for the Onomichi trip.
+// Anonymous visitors who open the website can read/write shared trip data.
+// Do not store sensitive information or private photographs.
 service cloud.firestore {
   match /databases/{database}/documents {
     function isAnonymousVisitor() {
@@ -11,6 +10,7 @@ service cloud.firestore {
         && request.auth.token.firebase.sign_in_provider == 'anonymous';
     }
 
+    // Original itinerary validation and permissions retained unchanged.
     function validItinerary() {
       return request.resource.data.keys().hasOnly(
           ['items', 'schemaVersion', 'updatedAt', 'updatedBy', 'updatedName'])
@@ -32,8 +32,7 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Small shared JPEG previews, available to anonymous visitors to this public trip site.
-    // Photos are not private. Individual previews must fit within Firestore limits.
+    // Each photo is a compressed JPEG preview, < 140,001 base64 characters.
     function validSharedPhoto() {
       let p = request.resource.data;
       return p.keys().hasOnly(
@@ -44,20 +43,10 @@ service cloud.firestore {
            'createdAt', 'uploadedBy', 'updatedAt'])
         && p.id is string
         && p.id.size() <= 90
-        && p.id.matches('^[a-zA-Z0-9-]+
-      allow read, write: if false;
-    }
-  }
-}
-)
+        && p.id.matches('^[a-zA-Z0-9-]+$')
         && p.spotId is string
         && p.spotId.size() <= 80
-        && p.spotId.matches('^[a-zA-Z0-9-]+
-      allow read, write: if false;
-    }
-  }
-}
-)
+        && p.spotId.matches('^[a-zA-Z0-9-]+$')
         && p.day is int
         && p.day in [1, 2]
         && p.name is string
@@ -66,12 +55,7 @@ service cloud.firestore {
         && p.caption.size() <= 250
         && p.dataUrl is string
         && p.dataUrl.size() < 140001
-        && p.dataUrl.matches('^data:image/jpeg;base64,[A-Za-z0-9+/=]+
-      allow read, write: if false;
-    }
-  }
-}
-)
+        && p.dataUrl.matches('^data:image/jpeg;base64,[A-Za-z0-9+/=]+$')
         && p.createdAt is int
         && p.createdAt > 0
         && p.uploadedBy is string
@@ -95,6 +79,7 @@ service cloud.firestore {
         && resource.data.uploadedBy == request.auth.uid;
     }
 
+    // All other paths remain denied.
     match /{document=**} {
       allow read, write: if false;
     }
