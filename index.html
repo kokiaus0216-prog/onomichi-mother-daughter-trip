@@ -621,6 +621,7 @@ body.shared-editing .shared-edit-btn{display:inline-flex!important;align-items:c
           catch(error){console.warn('写真の共有に失敗',error)}
         }
       }
+      window.OnomichiPhotoCloud?.refreshControls?.();
       renderTimeline();renderAlbum();
       toast(!count?'写真を追加できませんでした':cloudCount===count?'📷 '+count+'枚を共有アルバムに追加したよ！':'📷 '+count+'枚をこのスマホに保存。未共有の写真は「みんなに共有」で送れるよ');
     }catch(e){console.error(e);toast('写真を保存できませんでした。空き容量を確認してね。')}
@@ -692,7 +693,7 @@ body.shared-editing .shared-edit-btn{display:inline-flex!important;align-items:c
     @media print{.now-pin,.timeline-rail,.live-panel,.journey-shortcuts{display:none!important}}
 </style></head><body><main><header><div>🌸 📷 🌊</div><h1>かえでとゆかの母娘旅行 in尾道</h1><p>かえで と ゆか　♡　2026.11.28 — 11.29</p></header>${groups}<p style="text-align:center;margin:40px">ふたりの思い出は、ずっと宝物 ♡</p></main></body></html>`}
   function makeBackup(){const data={app:'onomichi-mother-daughter-trip',version:2,exportedAt:new Date().toISOString(),expenses,checks,packs,memo:$('#tripMemo').value,photos};downloadBlob(new Blob([JSON.stringify(data)],{type:'application/json'}),'尾道旅行_写真と費用のバックアップ.json')}
-  async function importBackup(file){busy(true);try{if(file.size>100*1024*1024)throw new Error('容量が大きすぎます');const data=JSON.parse(await file.text());if(data.app!=='onomichi-mother-daughter-trip'||!Array.isArray(data.photos))throw new Error('このサイト用のバックアップではありません');if(!confirm('バックアップの費用・持ち物・メモを置き換えて、写真を追加しますか？'))return;expenses=Array.isArray(data.expenses)?data.expenses:[];checks=data.checks&&typeof data.checks==='object'?data.checks:{};packs=Array.isArray(data.packs)?data.packs:packs;setLS('expenses',expenses);setLS('checks',checks);setLS('packs',packs);$('#tripMemo').value=String(data.memo||'');setLS('memo',$('#tripMemo').value);for(const p of data.photos){if(typeof p.id==='string'&&typeof p.spotId==='string'&&typeof p.dataUrl==='string'&&p.dataUrl.startsWith('data:image/'))await putPhoto(p)}localPhotos=await getAllPhotos();syncPhotoView();renderAll();toast('🌷 バックアップを読み込みました。共有するには「このスマホの写真をみんなに共有」を押してね')}catch(e){console.error(e);toast('読み込めませんでした：ファイルを確認してね')}finally{busy(false);$('#importBackup').value=''}}
+  async function importBackup(file){busy(true);try{if(file.size>100*1024*1024)throw new Error('容量が大きすぎます');const data=JSON.parse(await file.text());if(data.app!=='onomichi-mother-daughter-trip'||!Array.isArray(data.photos))throw new Error('このサイト用のバックアップではありません');if(!confirm('バックアップの費用・持ち物・メモを置き換えて、写真を追加しますか？'))return;expenses=Array.isArray(data.expenses)?data.expenses:[];checks=data.checks&&typeof data.checks==='object'?data.checks:{};packs=Array.isArray(data.packs)?data.packs:packs;setLS('expenses',expenses);setLS('checks',checks);setLS('packs',packs);$('#tripMemo').value=String(data.memo||'');setLS('memo',$('#tripMemo').value);for(const p of data.photos){if(typeof p.id==='string'&&typeof p.spotId==='string'&&typeof p.dataUrl==='string'&&p.dataUrl.startsWith('data:image/'))await putPhoto(p)}localPhotos=await getAllPhotos();syncPhotoView();renderAll();window.OnomichiPhotoCloud?.refreshControls?.();toast('🌷 バックアップを読み込みました。共有するには「このスマホの写真をみんなに共有」を押してね')}catch(e){console.error(e);toast('読み込めませんでした：ファイルを確認してね')}finally{busy(false);$('#importBackup').value=''}}
   function renderAll(){renderTimeline();renderAlbum();renderExpenses();renderPacks()}
   window.OnomichiTripBridge={
   getDefaults:()=>DEFAULT_STOPS.map(s=>{const kind=TRAIN_IDS.has(s.id)?'train':BUS_IDS.has(s.id)?'bus':'other';return {...s,kind,...(TRAVEL_TIMES[s.id]?{transport:{...TRAVEL_TIMES[s.id]}}:{})}}),
@@ -756,7 +757,7 @@ body.shared-editing .shared-edit-btn{display:inline-flex!important;align-items:c
   $('#tripMemo').value=getLS('memo','');$('#tripMemo').addEventListener('input',e=>setLS('memo',e.target.value));$('#exportBackup').addEventListener('click',makeBackup);$('#importBackup').addEventListener('change',e=>{if(e.target.files[0])importBackup(e.target.files[0])});
   $('#albumSave').addEventListener('click',()=>{if(!photos.length){toast('先に写真を追加してね');return}downloadBlob(new Blob([albumHTML()],{type:'text/html;charset=utf-8'}),'初_母娘の尾道旅行_思い出アルバム.html');toast('📕 写真入りアルバムを保存したよ')});
   $('#printAlbum').addEventListener('click',()=>{if(!photos.length){toast('先に写真を追加してね');return}window.print()});$('#closePreview').addEventListener('click',()=>$('#preview').classList.remove('open'));$('#preview').addEventListener('click',e=>{if(e.target===$('#preview'))$('#preview').classList.remove('open')});document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#preview').classList.remove('open')});$('#topBtn').addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
-  (async()=>{try{localPhotos=await getAllPhotos();syncPhotoView()}catch(e){console.warn(e);toast('写真保存には通常のブラウザを使用してね')}renderAll()})();
+  (async()=>{try{localPhotos=await getAllPhotos();syncPhotoView();window.OnomichiPhotoCloud?.refreshControls?.()}catch(e){console.warn(e);toast('写真保存には通常のブラウザを使用してね')}renderAll()})();
   </script>
   <script type="module" src="./firebase-sync.js"></script>
 </body></html>
