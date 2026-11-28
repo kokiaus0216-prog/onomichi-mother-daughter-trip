@@ -32,6 +32,69 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Small shared JPEG previews, available to anonymous visitors to this public trip site.
+    // Photos are not private. Individual previews must fit within Firestore limits.
+    function validSharedPhoto() {
+      let p = request.resource.data;
+      return p.keys().hasOnly(
+          ['id', 'spotId', 'day', 'name', 'caption', 'dataUrl',
+           'createdAt', 'uploadedBy', 'updatedAt'])
+        && p.keys().hasAll(
+          ['id', 'spotId', 'day', 'name', 'caption', 'dataUrl',
+           'createdAt', 'uploadedBy', 'updatedAt'])
+        && p.id is string
+        && p.id.size() <= 90
+        && p.id.matches('^[a-zA-Z0-9-]+
+      allow read, write: if false;
+    }
+  }
+}
+)
+        && p.spotId is string
+        && p.spotId.size() <= 80
+        && p.spotId.matches('^[a-zA-Z0-9-]+
+      allow read, write: if false;
+    }
+  }
+}
+)
+        && p.day is int
+        && p.day in [1, 2]
+        && p.name is string
+        && p.name.size() <= 100
+        && p.caption is string
+        && p.caption.size() <= 250
+        && p.dataUrl is string
+        && p.dataUrl.size() < 140001
+        && p.dataUrl.matches('^data:image/jpeg;base64,[A-Za-z0-9+/=]+
+      allow read, write: if false;
+    }
+  }
+}
+)
+        && p.createdAt is int
+        && p.createdAt > 0
+        && p.uploadedBy is string
+        && p.uploadedBy.size() <= 128
+        && p.updatedAt is timestamp
+        && p.updatedAt == request.time;
+    }
+
+    match /trips/onomichi-2026/photos/{photoId} {
+      allow get: if isAnonymousVisitor();
+      allow list: if isAnonymousVisitor() && request.query.limit <= 300;
+      allow create: if isAnonymousVisitor()
+        && validSharedPhoto()
+        && request.resource.data.id == photoId
+        && request.resource.data.uploadedBy == request.auth.uid;
+      allow update: if isAnonymousVisitor()
+        && validSharedPhoto()
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['caption', 'updatedAt']);
+      allow delete: if isAnonymousVisitor()
+        && resource.data.uploadedBy == request.auth.uid;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
