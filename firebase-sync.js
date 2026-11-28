@@ -254,15 +254,18 @@ function setPhotoStatus(message){
   if(el)el.textContent=message;
 }
 function updatePhotoControls(){
+  const local=window.OnomichiPhotoUI?.localItems?.()||[];
   const pending=window.OnomichiPhotoUI?.unsharedItems?.()||[];
   const button=$('photoShareOld');
   if(button){
-    button.hidden=!photoConnected||pending.length===0;
+    button.hidden=false;
     button.disabled=migrationActive;
-    button.textContent=migrationActive?'共有アルバムへ送信中…':'📤 このスマホの未共有写真 '+pending.length+'枚を共有';
+    button.textContent=migrationActive?'☁️ 写真を送信中…':pending.length
+      ?'📤 未共有の写真 '+pending.length+'枚を確認・共有'
+      :'📷 このスマホの写真を確認・共有';
   }
   if(photoConnected&&!migrationActive){
-    setPhotoStatus('☁️ 共有アルバム '+cloudPhotoIds.size+'枚 ・ '+(pending.length?pending.length+'枚はこの端末のみ':'すべて同期済み'));
+    setPhotoStatus('☁️ 共有アルバム '+cloudPhotoIds.size+'枚 ／ 📱 このスマホ '+local.length+'枚 ／ 未共有 '+pending.length+'枚');
   }
 }
 async function compressForFirestore(originalDataUrl){
@@ -332,22 +335,50 @@ window.OnomichiPhotoCloud={
   upload:uploadSharedPhoto,
   updateCaption:updateSharedCaption,
   remove:deleteSharedPhoto,
-  refreshControls:updatePhotoControls
+  refreshControls:updatePhotoControls,
+  shareLocal:()=>migrateLocalPhotos()
 };
 async function migrateLocalPhotos(){
-  if(!photoConnected||migrationActive)return;
+  if(migrationActive)return;
+  let localCount=0;
+  try{
+    localCount=await window.OnomichiPhotoUI?.reloadLocal?.()||0;
+  }catch(error){
+    console.warn('写真の再読み込みに失敗',error);
+    window.alert('このブラウザから写真を読み込めませんでした。写真を保存したときと同じSafariで開いてみてね。');
+    return;
+  }
+  updatePhotoControls();
+  if(!localCount){
+    setPhotoStatus('📱 このブラウザの保存写真は0枚です。写真を追加した端末の同じブラウザで開いてね');
+    window.alert('このブラウザに保存されている写真は0枚です。ゆかさんがアップした写真なら、ゆかさんのスマホで、アップロード時と同じSafari（またはLINE内ブラウザ）を開いて操作してね。');
+    return;
+  }
+  if(!photoConnected){
+    window.alert('写真共有に接続できていません。アルバムの「共有写真が未接続」表示とFirebaseのルール設定を確認してね。');
+    return;
+  }
   const unshared=window.OnomichiPhotoUI?.unsharedItems?.()||[];
-  if(!unshared.length)return;
+  if(!unshared.length){
+    window.alert('このスマホに保存された写真 '+localCount+'枚はすべて共有済みだよ。別のスマホで表示されない場合は、相手のページを更新してみてね。');
+    return;
+  }
   if(!window.confirm('このスマホの未共有写真 '+unshared.length+'枚を、旅行サイトを開ける全員に共有します。続ける？'))return;
   migrationActive=true;updatePhotoControls();
-  let success=0,failed=0;
-  for(const p of unshared){
+  let success=0,failed=0,lastError='';
+  for(const photo of unshared){
     setPhotoStatus('☁️ '+(success+failed)+'/'+unshared.length+'枚を共有中…');
-    try{await uploadSharedPhoto(p);success++}
-    catch(err){failed++;console.warn('共有できなかった写真',p.id,err)}
+    try{await uploadSharedPhoto(photo);success++}
+    catch(error){failed++;lastError=String(error?.message||error);console.warn('共有できなかった写真',photo.id,error)}
   }
   migrationActive=false;updatePhotoControls();
-  setPhotoStatus(failed?'☁️ '+success+'枚共有・'+failed+'枚は未共有（通信や容量を確認）':'☁️ '+success+'枚の写真を共有したよ！');
+  if(failed){
+    setPhotoStatus('⚠️ '+success+'枚共有・'+failed+'枚は未共有（容量・権限・通信などを確認）');
+    window.alert('共有した写真: '+success+'枚／失敗: '+failed+'枚。\n'+lastError.slice(0,200));
+  }else{
+    setPhotoStatus('☁️ '+success+'枚の写真を共有したよ！');
+    window.alert('📸 '+success+'枚の写真を共有したよ！別のスマホでもアルバムと「ここでの思い出」に表示されるよ。');
+  }
 }
 $('photoShareOld')?.addEventListener('click',migrateLocalPhotos);
 function listenToSharedPhotos(){
