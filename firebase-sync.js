@@ -337,6 +337,7 @@ async function migrateLocalPhotos(){
   if(!photoConnected||migrationActive)return;
   const unshared=window.OnomichiPhotoUI?.unsharedItems?.()||[];
   if(!unshared.length)return;
+  if(!window.confirm('このスマホの未共有写真 '+unshared.length+'枚を、旅行サイトを開ける全員に共有します。続ける？'))return;
   migrationActive=true;updatePhotoControls();
   let success=0,failed=0;
   for(const p of unshared){
@@ -354,7 +355,9 @@ function listenToSharedPhotos(){
   cloudPhotoIds=new Map();
   setPhotoStatus('☁️ 共有写真を読み込み中…');
   const collectionRef=api.collection(db,'trips','onomichi-2026','photos');
-  photoUnsubscribe=api.onSnapshot(collectionRef,snapshot=>{
+  // This limit must match the Firestore list rule to permit a collection query.
+  const photoQuery=api.query(collectionRef,api.limit(300));
+  photoUnsubscribe=api.onSnapshot(photoQuery,snapshot=>{
     const items=snapshot.docs.map(doc=>({id:doc.id,...doc.data()}));
     cloudPhotoIds=new Map(items.map(p=>[p.id,p]));
     photoConnected=true;
