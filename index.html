@@ -251,9 +251,9 @@ body.shared-editing .shared-edit-btn{display:inline-flex!important;align-items:c
         <p class="help">写真を追加するには「旅程」の各スポットにある「📷 写真を追加」をタップ。共有アルバムが接続済みなら、別のスマホにも表示されます。コメントはここで編集できます。</p>
         <div class="shared-album-bar" role="status" aria-live="polite">
           <span id="photoShareStatus">☁️ 共有アルバムの準備中…</span>
-          <button type="button" id="photoShareOld" hidden>このスマホの写真をみんなに共有</button>
+          <button type="button" id="photoShareOld">📷 このスマホの写真を確認・共有</button>
         </div>
-        <p class="shared-album-note">写真は圧縮した共有版を保存。アルバムは同じサイトを開いたスマホで自動更新されます。公開URLを知っている人は共有写真を見ることができます。</p>
+        <p class="shared-album-note">📷 昔アップした写真は、<strong>その写真を追加したスマホの同じブラウザ</strong>で上のボタンを押して共有してね。共有された写真は「アルバム」としおりの「ここでの思い出」の両方に表示されます。写真は圧縮して共有され、公開URLを知っている人は閲覧できます。</p>
         <div id="albumContent"></div>
       </div>
     </section>
@@ -344,6 +344,12 @@ body.shared-editing .shared-edit-btn{display:inline-flex!important;align-items:c
   window.OnomichiPhotoUI={
     localItems:()=>localPhotos.map(p=>({...p})),
     unsharedItems:()=>localPhotos.filter(p=>!remotePhotos.some(r=>r.id===p.id)).map(p=>({...p})),
+    async reloadLocal(){
+      localPhotos=await getAllPhotos();
+      syncPhotoView();
+      renderTimeline();renderAlbum();
+      return localPhotos.length;
+    },
     isRemote:id=>remotePhotos.some(p=>p.id===id),
     setRemote(items){
       if(!Array.isArray(items)||items.length>300)return false;
@@ -492,6 +498,7 @@ body.shared-editing .shared-edit-btn{display:inline-flex!important;align-items:c
       <div class="camera-deco">${list.length?'🌸':'📷'}</div>
       <div class="camera-label">${list.length?`写真 ${list.length}枚`:'ここでの思い出'}</div>
       ${memo}
+      ${deviceCount?'<button class="memory-all-btn" type="button" data-sharephotos="true">📤 このスマホだけの写真を共有する</button>':''}
       ${thumbs?`<div class="journey-thumbs">${thumbs}</div>`:`<div class="camera-placeholder">旅の一枚を残そう ♡</div>`}
       ${list.length>3?`<button class="memory-all-btn" type="button" data-go="album">残り ${list.length-3}枚もアルバムで見る ↗</button>`:''}
       <button class="mini-photo-btn" type="button" data-addphoto="${escapeHTML(s.id)}">＋ 写真を追加</button>
@@ -720,7 +727,7 @@ body.shared-editing .shared-edit-btn{display:inline-flex!important;align-items:c
   window.addEventListener('resize',()=>requestAnimationFrame(updateLive));
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateLive()});
   setInterval(()=>{if(!document.hidden)updateLive()},15000);
-  document.addEventListener('click',async e=>{const add=e.target.closest('[data-addphoto]');if(add){pendingPhotoSpot=add.dataset.addphoto;$('#photoInput').click();return}const camera=e.target.closest('[data-camera]');if(camera){pendingPhotoSpot=camera.dataset.camera;$('#cameraInput').click();return}const check=e.target.closest('[data-check]');if(check){checks[check.dataset.check]=check.checked;setLS('checks',checks);renderTimeline();return}const photo=e.target.closest('[data-preview]');if(photo){const p=photos.find(x=>x.id===photo.dataset.preview);if(p){$('#previewImg').src=p.dataUrl;$('#previewCaption').textContent=(p.caption||'')+'　📍 '+stopName(p.spotId);$('#preview').classList.add('open')}return}const delPhoto=e.target.closest('[data-delphoto]');if(delPhoto){
+  document.addEventListener('click',async e=>{const share=e.target.closest('[data-sharephotos]');if(share){await window.OnomichiPhotoCloud?.shareLocal?.();return}const add=e.target.closest('[data-addphoto]');if(add){pendingPhotoSpot=add.dataset.addphoto;$('#photoInput').click();return}const camera=e.target.closest('[data-camera]');if(camera){pendingPhotoSpot=camera.dataset.camera;$('#cameraInput').click();return}const check=e.target.closest('[data-check]');if(check){checks[check.dataset.check]=check.checked;setLS('checks',checks);renderTimeline();return}const photo=e.target.closest('[data-preview]');if(photo){const p=photos.find(x=>x.id===photo.dataset.preview);if(p){$('#previewImg').src=p.dataUrl;$('#previewCaption').textContent=(p.caption||'')+'　📍 '+stopName(p.spotId);$('#preview').classList.add('open')}return}const delPhoto=e.target.closest('[data-delphoto]');if(delPhoto){
     const id=delPhoto.dataset.delphoto;
     if(!confirm('この写真をアルバムから削除する？ 共有済みなら他のスマホからも消えます。'))return;
     try{
