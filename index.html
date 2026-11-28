@@ -189,6 +189,10 @@ body.shared-editing .shared-edit-btn{display:inline-flex!important;align-items:c
 .shared-album-note{color:#826950;font-size:11px;line-height:1.6;margin:3px 0 14px}
 .photo-share-label{font-size:10px;padding:3px 6px;border-radius:4px;background:#e4efdf;color:#526d44}
 .photo-share-label.local{background:#fbebd5;color:#955a2f}
+
+.memory-share-count{display:flex;flex-wrap:wrap;gap:3px 7px;justify-content:center;margin:4px 0 7px;font-size:10px;line-height:1.35;color:#795038;font-weight:700}
+.memory-share-count span{color:#986b3d}
+.memory-all-btn{width:100%;border:1px solid #d6b793;background:#f9f0e5;color:#895338;border-radius:6px;padding:6px 2px;margin:6px 0 7px;font-size:10px;font-weight:700}
 </style>
 </head>
 <body>
@@ -477,14 +481,21 @@ body.shared-editing .shared-edit-btn{display:inline-flex!important;align-items:c
     </div>`;
   }
   function cameraCard(s){
+    // Photos contains local originals merged with Firestore shared previews.
+    // Both the spot-specific memories and full album use the same list.
     const list=photos.filter(p=>p.spotId===s.id);
+    const sharedCount=list.filter(p=>p.shared).length;
+    const deviceCount=list.length-sharedCount;
     const thumbs=list.slice(0,3).map(p=>`<img src="${p.dataUrl}" alt="${escapeHTML(p.caption||s.name)}の写真" data-preview="${escapeHTML(p.id)}" loading="lazy">`).join('');
+    const memo=list.length?`<div class="memory-share-count">${sharedCount?`☁️ 共有 ${sharedCount}枚`:''}${deviceCount?`<span>📱 未共有 ${deviceCount}枚</span>`:''}</div>`:'';
     return `<div class="journey-photo card">
       <div class="camera-deco">${list.length?'🌸':'📷'}</div>
       <div class="camera-label">${list.length?`写真 ${list.length}枚`:'ここでの思い出'}</div>
+      ${memo}
       ${thumbs?`<div class="journey-thumbs">${thumbs}</div>`:`<div class="camera-placeholder">旅の一枚を残そう ♡</div>`}
-      <button class="mini-photo-btn" type="button" data-addphoto="${s.id}">＋ 写真を追加</button>
-      <button class="mini-camera-btn" type="button" data-camera="${s.id}">📸 カメラで撮る</button>
+      ${list.length>3?`<button class="memory-all-btn" type="button" data-go="album">残り ${list.length-3}枚もアルバムで見る ↗</button>`:''}
+      <button class="mini-photo-btn" type="button" data-addphoto="${escapeHTML(s.id)}">＋ 写真を追加</button>
+      <button class="mini-camera-btn" type="button" data-camera="${escapeHTML(s.id)}">📸 カメラで撮る</button>
     </div>`;
   }
   function renderOverview(){
