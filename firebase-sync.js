@@ -6,6 +6,7 @@ const TRIP_PATH = ['trips', 'onomichi-2026', 'itinerary', 'main'];
 const LOCKED_TRAVEL = new Set(['saga-out','shink-out','localtrain','bus-on','bus-return','dinner-bus-out','dinner-bus-back','return-shink','midori']);
 let auth, db, api, snapshotUnsubscribe=null, currentUser=null, sharedReady=false, editMode=false;
 let itineraryRef=null, saving=false, autoSigningIn=false, attemptedInit=false;
+let photoUnsubscribe=null, photoConnected=false, cloudPhotoIds=new Map(), migrationActive=false;
 
 function status(text){if($('sharedStatus'))$('sharedStatus').textContent=text;}
 function help(text){if($('sharedHelp'))$('sharedHelp').textContent=text;}
@@ -224,7 +225,7 @@ function listen(user){
     sharedReady=true;refreshActions();
     if(!editMode)editModeSet(true);
     status(snap.metadata.hasPendingWrites?'変更を同期中…':'共有中・編集できます');
-    help('ログイン不要。予定を追加・編集するとほかのスマホにも反映されます。公開URLを知っている人なら誰でも旅程を変更できます。写真・旅費メモは端末別保存です。');
+    help('旅程と写真は共有できます。写真は「アルバム」で確認してね。旅費と持ち物は端末別保存です。公開URLを知っている人なら閲覧できます。');
   },error=>{
     sharedReady=false;editModeSet(false);refreshActions();
     status('共有旅程へアクセスできません');
@@ -242,6 +243,130 @@ $('sharedSignIn').addEventListener('click',async()=>{
 $('sharedSignOut').addEventListener('click',async()=>{
   if(auth)try{await api.signOut(auth);}catch(e){help(errorMessage(e));}
 });
+
+
+/* Small, compressed shared photographs in Firestore.
+   On Spark (free) this avoids Firebase Storage's billing requirement.
+   Photos are JPEG previews only, max ~105 KiB each, not original files.
+   Access is the same anonymous/public-link access as the itinerary. */
+function setPhotoStatus(message){
+  const el=$('photoShareStatus');
+  if(el)el.textContent=message;
+}
+function updatePhotoControls(){
+  const pending=window.OnomichiPhotoUI?.unsharedItems?.()||[];
+  const button=$('photoShareOld');
+  if(button){
+    button.hidden=!photoConnected||pending.length===0;
+    button.disabled=migrationActive;
+    button.textContent=migrationActive?'共有アルバムへ送信中…':'📤 このスマホの未共有写真 '+pending.length+'枚を共有';
+  }
+  if(photoConnected&&!migrationActive){
+    setPhotoStatus('☁️ 共有アルバム '+cloudPhotoIds.size+'枚 ・ '+(pending.length?pending.length+'枚はこの端末のみ':'すべて同期済み'));
+  }
+}
+async function compressForFirestore(originalDataUrl){
+  if(!/^data:image\//.test(originalDataUrl||''))throw new Error('画像データではありません');
+  const img=new Image();
+  img.src=originalDataUrl;
+  await new Promise((resolve,reject)=>{if(img.complete&&img.naturalWidth)resolve();else{img.onload=resolve;img.onerror=()=>reject(new Error('画像を読み込めません'));}});
+  let size=Math.min(1050,Math.max(img.naturalWidth,img.naturalHeight)),quality=.78;
+  for(let i=0;i<12;i++){
+    const ratio=size/Math.max(img.naturalWidth,img.naturalHeight);
+    const canvas=document.createElement('canvas');
+    canvas.width=Math.max(1,Math.round(img.naturalWidth*ratio));
+    canvas.height=Math.max(1,Math.round(img.naturalHeight*ratio));
+    const ctx=canvas.getContext('2d',{alpha:false});
+    if(!ctx)throw new Error('画像の圧縮に失敗しました');
+    ctx.fillStyle='#ffffff';ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(img,0,0,canvas.width,canvas.height);
+    const encoded=canvas.toDataURL('image/jpeg',quality);
+    if(encoded.length<140000)return encoded;
+    size=Math.max(400,Math.round(size*.84));quality=Math.max(.48,quality-.045);
+  }
+  throw new Error('この写真は共有サイズに圧縮できませんでした');
+}
+async function uploadSharedPhoto(photo){
+  if(!photoConnected||!currentUser)throw new Error('共有アルバムに接続できていません');
+  if(!/^[a-zA-Z0-9-]{1,90}$/.test(photo.id||''))throw new Error('写真のIDに問題があります');
+  if(!/^data:image\//.test(photo.dataUrl||''))throw new Error('画像形式に対応していません');
+  if(cloudPhotoIds.has(photo.id))return false;
+  const preview=await compressForFirestore(photo.dataUrl);
+  const docRef=api.doc(db,'trips','onomichi-2026','photos',photo.id);
+  const item={
+    id:photo.id,
+    spotId:String(photo.spotId||'').slice(0,80),
+    day:Number(bridge.getStop(photo.spotId)?.d)||1,
+    name:String(photo.name||'旅行の写真').slice(0,100),
+    caption:String(photo.caption||'').slice(0,250),
+    dataUrl:preview,
+    createdAt:Number(photo.createdAt)||Date.now(),
+    uploadedBy:currentUser.uid,
+    updatedAt:api.serverTimestamp()
+  };
+  const inserted=await api.runTransaction(db,async transaction=>{
+    const snap=await transaction.get(docRef);
+    if(snap.exists())return false;
+    transaction.set(docRef,item);
+    return true;
+  });
+  if(inserted){cloudPhotoIds.set(item.id,{...item});updatePhotoControls();}
+  return inserted;
+}
+async function updateSharedCaption(id,caption){
+  if(!photoConnected||!currentUser)throw new Error('接続されていません');
+  if(!cloudPhotoIds.has(id))throw new Error('共有写真が見つかりません');
+  await api.updateDoc(api.doc(db,'trips','onomichi-2026','photos',id),{
+    caption:String(caption).slice(0,250),updatedAt:api.serverTimestamp()
+  });
+}
+async function deleteSharedPhoto(id){
+  if(!photoConnected||!currentUser)throw new Error('接続されていません');
+  const item=cloudPhotoIds.get(id);
+  if(!item||item.uploadedBy!==currentUser.uid)throw new Error('この写真は投稿した端末からのみ削除できます');
+  await api.deleteDoc(api.doc(db,'trips','onomichi-2026','photos',id));
+}
+window.OnomichiPhotoCloud={
+  ready:()=>photoConnected&&!!currentUser,
+  canDelete:id=>!!currentUser&&cloudPhotoIds.get(id)?.uploadedBy===currentUser.uid,
+  upload:uploadSharedPhoto,
+  updateCaption:updateSharedCaption,
+  remove:deleteSharedPhoto
+};
+async function migrateLocalPhotos(){
+  if(!photoConnected||migrationActive)return;
+  const unshared=window.OnomichiPhotoUI?.unsharedItems?.()||[];
+  if(!unshared.length)return;
+  migrationActive=true;updatePhotoControls();
+  let success=0,failed=0;
+  for(const p of unshared){
+    setPhotoStatus('☁️ '+(success+failed)+'/'+unshared.length+'枚を共有中…');
+    try{await uploadSharedPhoto(p);success++}
+    catch(err){failed++;console.warn('共有できなかった写真',p.id,err)}
+  }
+  migrationActive=false;updatePhotoControls();
+  setPhotoStatus(failed?'☁️ '+success+'枚共有・'+failed+'枚は未共有（通信や容量を確認）':'☁️ '+success+'枚の写真を共有したよ！');
+}
+$('photoShareOld')?.addEventListener('click',migrateLocalPhotos);
+function listenToSharedPhotos(){
+  if(photoUnsubscribe){photoUnsubscribe();photoUnsubscribe=null}
+  photoConnected=false;
+  cloudPhotoIds=new Map();
+  setPhotoStatus('☁️ 共有写真を読み込み中…');
+  const collectionRef=api.collection(db,'trips','onomichi-2026','photos');
+  photoUnsubscribe=api.onSnapshot(collectionRef,snapshot=>{
+    const items=snapshot.docs.map(doc=>({id:doc.id,...doc.data()}));
+    cloudPhotoIds=new Map(items.map(p=>[p.id,p]));
+    photoConnected=true;
+    window.OnomichiPhotoUI?.setRemote?.(items);
+    updatePhotoControls();
+  },error=>{
+    photoConnected=false;
+    updatePhotoControls();
+    setPhotoStatus('⚠️ 共有写真が未接続。Firestoreの写真用ルールを公開してね');
+    console.warn('Photo sync denied',error);
+  });
+}
 
 async function boot(){
   if(!bridge){status('サイトの読み込みに失敗');return;}
@@ -269,6 +394,7 @@ async function boot(){
         sharedReady=false;editModeSet(false);refreshActions();
         status('旅程を同期中…');
         listen(user);
+        listenToSharedPhotos();
         return;
       }
       // Do not ask the visitor to log in. Existing Google sessions are signed out
