@@ -331,7 +331,8 @@ window.OnomichiPhotoCloud={
   canDelete:id=>!!currentUser&&cloudPhotoIds.get(id)?.uploadedBy===currentUser.uid,
   upload:uploadSharedPhoto,
   updateCaption:updateSharedCaption,
-  remove:deleteSharedPhoto
+  remove:deleteSharedPhoto,
+  refreshControls:updatePhotoControls
 };
 async function migrateLocalPhotos(){
   if(!photoConnected||migrationActive)return;
