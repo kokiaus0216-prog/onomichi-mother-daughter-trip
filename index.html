@@ -183,6 +183,12 @@ body.shared-editing .shared-edit-btn{display:inline-flex!important;align-items:c
 .shared-dialog-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end;margin-top:12px}
 .shared-dialog-actions #sharedDelete{margin-right:auto;color:#a53e32;border-color:#c78377}
 @media(max-width:520px){.shared-panel>summary{font-size:12.5px;padding:11px}.shared-dialog form{padding:14px}.shared-dialog h3{font-size:17px}.shared-dialog-actions button{padding:9px;font-size:11px}}
+.shared-album-bar{margin:14px 0 8px;background:#f7e9d6;border:1px solid #dabb91;border-radius:9px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:11px 13px;color:#6e432c;font-size:12px;font-weight:750}
+.shared-album-bar button{border:0;background:#9a5136;color:white;border-radius:6px;padding:9px 12px;font-weight:750;font-size:12px}
+.shared-album-bar button[hidden]{display:none}
+.shared-album-note{color:#826950;font-size:11px;line-height:1.6;margin:3px 0 14px}
+.photo-share-label{font-size:10px;padding:3px 6px;border-radius:4px;background:#e4efdf;color:#526d44}
+.photo-share-label.local{background:#fbebd5;color:#955a2f}
 </style>
 </head>
 <body>
@@ -239,6 +245,11 @@ body.shared-editing .shared-edit-btn{display:inline-flex!important;align-items:c
         <div class="album-banner"><h3>尾道の、ふたりの宝物 ♡</h3><p>2026.11.28 - 11.29　かえで ＆ ゆか</p><span style="font-size:25px">🌷 📷 🐈 ⛩️ 🌊</span></div>
         <div class="photo-toolbar album-actions"><button type="button" class="btn" id="albumSave">📕 写真入りアルバムを保存</button><button type="button" class="btn alt" id="printAlbum">🖨️ 印刷・PDF</button></div>
         <p class="help">写真を追加するには「しおり」の各スポットにある「📷 写真を追加」をタップ。キャプションはこの画面で編集できます。</p>
+        <div class="shared-album-bar" role="status" aria-live="polite">
+          <span id="photoShareStatus">☁️ 共有アルバムの準備中…</span>
+          <button type="button" id="photoShareOld" hidden>このスマホの写真をみんなに共有</button>
+        </div>
+        <p class="shared-album-note">写真は圧縮した共有版を保存。アルバムは同じサイトを開いたスマホで自動更新されます。公開URLを知っている人は共有写真を見ることができます。</p>
         <div id="albumContent"></div>
       </div>
     </section>
@@ -311,13 +322,33 @@ body.shared-editing .shared-edit-btn{display:inline-flex!important;align-items:c
   const prefix='onomichi-mom-daughter-v2-';
   function getLS(key,def){try{const v=localStorage.getItem(prefix+key);return v?JSON.parse(v):def}catch{return def}}
   function setLS(key,value){try{localStorage.setItem(prefix+key,JSON.stringify(value))}catch{toast('端末の保存容量に空きがありません')}}
-  let expenses=getLS('expenses',[]), checks=getLS('checks',{}), packs=getLS('packs',DEFAULT_PACK.map(x=>({text:x,done:false}))), day=1, photos=[]; let pendingPhotoSpot=null; let dbPromise=null;
+  let expenses=getLS('expenses',[]), checks=getLS('checks',{}), packs=getLS('packs',DEFAULT_PACK.map(x=>({text:x,done:false}))), day=1, photos=[], localPhotos=[], remotePhotos=[]; let pendingPhotoSpot=null; let dbPromise=null;
   const $=sel=>document.querySelector(sel);
   function escapeHTML(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
   function googleMap(query){return /^https:\/\//.test(query)?query:'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(query)}
   function money(n){return '¥'+Math.round(Number(n)||0).toLocaleString('ja-JP')}
   function toast(message){const box=$('#toast');box.textContent=message;box.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>box.classList.remove('show'),2600)}
   function busy(on){$('#spinner').classList.toggle('show',on)}
+  function syncPhotoView(){
+    const merged=new Map(localPhotos.map(p=>[p.id,{...p,shared:false}]));
+    for(const remote of remotePhotos){
+      const local=merged.get(remote.id);
+      merged.set(remote.id,{...remote,...(local?{dataUrl:local.dataUrl}:{}),shared:true});
+    }
+    photos=[...merged.values()].sort((a,b)=>a.createdAt-b.createdAt);
+  }
+  window.OnomichiPhotoUI={
+    localItems:()=>localPhotos.map(p=>({...p})),
+    unsharedItems:()=>localPhotos.filter(p=>!remotePhotos.some(r=>r.id===p.id)).map(p=>({...p})),
+    isRemote:id=>remotePhotos.some(p=>p.id===id),
+    setRemote(items){
+      if(!Array.isArray(items)||items.length>300)return false;
+      remotePhotos=items.filter(p=>p&&typeof p.id==='string'&&typeof p.spotId==='string'&&typeof p.dataUrl==='string'&&p.dataUrl.startsWith('data:image/jpeg;base64,')&&typeof p.createdAt==='number').map(p=>({...p,shared:true}));
+      syncPhotoView();
+      renderTimeline();renderAlbum();
+      return true;
+    }
+  };
   function photoCount(id){return photos.filter(p=>p.spotId===id).length}
   function stopName(id){return STOPS.find(s=>s.id===id)?.name||'旅の思い出'}
   const TRAVEL_TIMES = {
@@ -546,9 +577,9 @@ body.shared-editing .shared-edit-btn{display:inline-flex!important;align-items:c
     const pin=$('#nowPin');
     if(pin){pin.style.top=Math.round(y)+'px';pin.classList.toggle('before-trip',before);pin.classList.toggle('after-trip',after);pin.setAttribute('aria-label',before?'旅行開始前':after?'旅行終了':'現在の進行目安');}
   }
-  function renderAlbum(){const byDay=d=>photos.filter(p=>STOPS.find(s=>s.id===p.spotId)?.d===d).sort((a,b)=>{const ai=STOPS.findIndex(s=>s.id===a.spotId),bi=STOPS.findIndex(s=>s.id===b.spotId);return ai-bi||a.createdAt-b.createdAt});$('#photoCount').textContent=photos.length+'枚の思い出';
+  function renderAlbum(){const byDay=d=>photos.filter(p=>(STOPS.find(s=>s.id===p.spotId)?.d||p.day)===d).sort((a,b)=>{const ai=STOPS.findIndex(s=>s.id===a.spotId),bi=STOPS.findIndex(s=>s.id===b.spotId);return ai-bi||a.createdAt-b.createdAt});$('#photoCount').textContent=photos.length+'枚の思い出';
     if(!photos.length){$('#albumContent').innerHTML='<div class="empty section"><div class="big">📷</div><strong>まだ写真はありません</strong><p>旅の各スポットで「写真を追加」してね。<br>ふたりだけのアルバムが育っていくよ♡</p><button class="btn" data-go="itinerary">🌷 しおりへ戻る</button></div>';return}
-    $('#albumContent').innerHTML=[1,2].map(d=>{const list=byDay(d);if(!list.length)return '';return `<div class="section"><div class="section-head"><span class="icon">${d===1?'🌸':'🌿'}</span><h2>11月${d===1?'28':'29'}日の思い出</h2><span class="side">${list.length}枚</span></div><div class="photo-grid">${list.map(p=>`<article class="card photo-card"><img src="${p.dataUrl}" loading="lazy" alt="${escapeHTML(p.caption||stopName(p.spotId))}" data-preview="${escapeHTML(p.id)}"><div class="photo-meta"><h3>📍 ${escapeHTML(stopName(p.spotId))}</h3><textarea class="photo-caption" data-caption="${escapeHTML(p.id)}" aria-label="写真の一言コメント" placeholder="この日のひとこと…">${escapeHTML(p.caption||'')}</textarea><div class="saved-caption" style="display:none">${escapeHTML(p.caption||'')}</div><div class="photo-foot"><small style="color:#b8a29a">${new Date(p.createdAt).toLocaleDateString('ja-JP')}</small><button type="button" class="link-btn" data-delphoto="${escapeHTML(p.id)}">削除 ×</button></div></div></article>`).join('')}</div></div>`}).join('');
+    $('#albumContent').innerHTML=[1,2].map(d=>{const list=byDay(d);if(!list.length)return '';return `<div class="section"><div class="section-head"><span class="icon">${d===1?'🌸':'🌿'}</span><h2>11月${d===1?'28':'29'}日の思い出</h2><span class="side">${list.length}枚</span></div><div class="photo-grid">${list.map(p=>`<article class="card photo-card"><img src="${p.dataUrl}" loading="lazy" alt="${escapeHTML(p.caption||stopName(p.spotId))}" data-preview="${escapeHTML(p.id)}"><div class="photo-meta"><h3>📍 ${escapeHTML(stopName(p.spotId))}</h3><textarea class="photo-caption" data-caption="${escapeHTML(p.id)}" aria-label="写真の一言コメント" placeholder="この日のひとこと…">${escapeHTML(p.caption||'')}</textarea><div class="saved-caption" style="display:none">${escapeHTML(p.caption||'')}</div><div class="photo-foot"><small style="color:#b8a29a">${new Date(p.createdAt).toLocaleDateString('ja-JP')} <span class="photo-share-label ${p.shared?'':'local'}">${p.shared?'☁️ 共有済み':'📱 端末のみ'}</span></small>${(p.shared&&!window.OnomichiPhotoCloud?.canDelete?.(p.id))?'':`<button type="button" class="link-btn" data-delphoto="${escapeHTML(p.id)}">削除 ×</button>`}</div></div></article>`).join('')}</div></div>`}).join('');
   }
   function renderExpenses(){const total=expenses.reduce((sum,x)=>sum+x.amount,0);const kaede=expenses.filter(x=>x.payer==='kaede').reduce((sum,x)=>sum+x.amount,0);const yuka=total-kaede;$('#totalAmount').textContent=money(total);$('#kaedeAmount').textContent=money(kaede);$('#yukaAmount').textContent=money(yuka);
     const delta=kaede-total/2;$('#settlement').textContent=total===0?'支出を登録すると、ふたりで半分ずつ負担した場合の精算額が出るよ ♡':Math.abs(delta)<.5?'🌷 今のところ精算は不要だよ（半分ずつ負担）':`🌷 半分ずつ負担するなら、${delta>0?'ゆか → かえで':'かえで → ゆか'} に ${money(Math.abs(delta))} 精算する目安だよ`;
@@ -561,9 +592,31 @@ body.shared-editing .shared-edit-btn{display:inline-flex!important;align-items:c
   async function removePhoto(id){const db=await openDB();return new Promise((resolve,reject)=>{const tx=db.transaction('photos','readwrite');tx.objectStore('photos').delete(id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)})}
   async function compressImage(file){return new Promise((resolve,reject)=>{if(!file.type.startsWith('image/')){reject(new Error('画像ファイルを選んでね'));return}const img=new Image();const url=URL.createObjectURL(file);img.onload=()=>{URL.revokeObjectURL(url);const max=1700,scale=Math.min(1,max/Math.max(img.width,img.height));const w=Math.max(1,Math.round(img.width*scale)),h=Math.max(1,Math.round(img.height*scale));const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d');ctx.drawImage(img,0,0,w,h);let data=c.toDataURL('image/webp',.79);if(!data.startsWith('data:image/webp'))data=c.toDataURL('image/jpeg',.8);resolve(data)};img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('写真を読み込めませんでした'))};img.src=url})}
   function uuid(){return (typeof crypto!=='undefined'&&crypto.randomUUID)?crypto.randomUUID():'id-'+Date.now()+'-'+Math.random().toString(36).slice(2)}
-  async function handlePhotos(files){if(!files.length||!pendingPhotoSpot)return;busy(true);let count=0;try{for(const file of [...files]){if(photos.length>=200){toast('写真は最大200枚までにしてね');break}const dataUrl=await compressImage(file);const p={id:uuid(),spotId:pendingPhotoSpot,name:file.name||'photo',dataUrl,caption:'',createdAt:Date.now()+count};await putPhoto(p);photos.push(p);count++}renderTimeline();renderAlbum();toast(`📷 ${count}枚の写真を追加したよ！`)}catch(e){toast('写真を保存できませんでした。空き容量を確認してね。')}finally{busy(false);$('#photoInput').value='';$('#cameraInput').value=''}}
+  async function handlePhotos(files){
+    if(!files.length||!pendingPhotoSpot)return;
+    busy(true);
+    let count=0,cloudCount=0;
+    try{
+      for(const file of [...files]){
+        if(photos.length>=250){toast('写真は最大250枚までにしてね');break}
+        const dataUrl=await compressImage(file);
+        const p={id:uuid(),spotId:pendingPhotoSpot,name:file.name||'photo',dataUrl,caption:'',createdAt:Date.now()+count};
+        await putPhoto(p);
+        localPhotos.push(p);
+        syncPhotoView();
+        count++;
+        if(window.OnomichiPhotoCloud?.ready?.()){
+          try{await window.OnomichiPhotoCloud.upload(p);cloudCount++}
+          catch(error){console.warn('写真の共有に失敗',error)}
+        }
+      }
+      renderTimeline();renderAlbum();
+      toast(!count?'写真を追加できませんでした':cloudCount===count?'📷 '+count+'枚を共有アルバムに追加したよ！':'📷 '+count+'枚をこのスマホに保存。未共有の写真は「みんなに共有」で送れるよ');
+    }catch(e){console.error(e);toast('写真を保存できませんでした。空き容量を確認してね。')}
+    finally{busy(false);$('#photoInput').value='';$('#cameraInput').value=''}
+  }
   function downloadBlob(blob,filename){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000)}
-  function albumHTML(){const groups=[1,2].map(d=>{const list=photos.filter(p=>STOPS.find(s=>s.id===p.spotId)?.d===d).sort((a,b)=>STOPS.findIndex(s=>s.id===a.spotId)-STOPS.findIndex(s=>s.id===b.spotId)||a.createdAt-b.createdAt);if(!list.length)return '';return `<section class="day"><h2>🌷 11月${d===1?'28日（土）':'29日（日）'}</h2><div class="grid">${list.map(p=>`<figure><img src="${p.dataUrl}" alt="旅行の写真"><figcaption><strong>${escapeHTML(stopName(p.spotId))}</strong><br>${escapeHTML(p.caption||'')}</figcaption></figure>`).join('')}</div></section>`}).join('');return `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>かえでとゆかの母娘旅行 in尾道｜思い出アルバム</title><style>body{font-family:system-ui,sans-serif;background:#fff9f5;color:#795c62;margin:0;padding:25px}main{max-width:960px;margin:auto}header{text-align:center;background:#ffede8;border-radius:22px;padding:30px 10px}h1{font-size:clamp(24px,5vw,42px);margin:8px;color:#bd7380}h2{margin:40px 0 15px;color:#b47c85}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}figure{margin:0;background:white;border:1px solid #f2dfdd;padding:10px;border-radius:17px;break-inside:avoid}img{width:100%;height:auto;max-height:480px;object-fit:contain;border-radius:10px}figcaption{white-space:pre-wrap;line-height:1.8;padding:8px;font-size:14px}@media(max-width:600px){.grid{grid-template-columns:1fr}}@media print{body{padding:0}.grid{grid-template-columns:repeat(2,1fr)}} 
+  function albumHTML(){const groups=[1,2].map(d=>{const list=photos.filter(p=>(STOPS.find(s=>s.id===p.spotId)?.d||p.day)===d).sort((a,b)=>STOPS.findIndex(s=>s.id===a.spotId)-STOPS.findIndex(s=>s.id===b.spotId)||a.createdAt-b.createdAt);if(!list.length)return '';return `<section class="day"><h2>🌷 11月${d===1?'28日（土）':'29日（日）'}</h2><div class="grid">${list.map(p=>`<figure><img src="${p.dataUrl}" alt="旅行の写真"><figcaption><strong>${escapeHTML(stopName(p.spotId))}</strong><br>${escapeHTML(p.caption||'')}</figcaption></figure>`).join('')}</div></section>`}).join('');return `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>かえでとゆかの母娘旅行 in尾道｜思い出アルバム</title><style>body{font-family:system-ui,sans-serif;background:#fff9f5;color:#795c62;margin:0;padding:25px}main{max-width:960px;margin:auto}header{text-align:center;background:#ffede8;border-radius:22px;padding:30px 10px}h1{font-size:clamp(24px,5vw,42px);margin:8px;color:#bd7380}h2{margin:40px 0 15px;color:#b47c85}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}figure{margin:0;background:white;border:1px solid #f2dfdd;padding:10px;border-radius:17px;break-inside:avoid}img{width:100%;height:auto;max-height:480px;object-fit:contain;border-radius:10px}figcaption{white-space:pre-wrap;line-height:1.8;padding:8px;font-size:14px}@media(max-width:600px){.grid{grid-template-columns:1fr}}@media print{body{padding:0}.grid{grid-template-columns:repeat(2,1fr)}} 
     /* ===== Time-forward, two-sided timeline ===== */
     .journey-shortcuts{display:flex;gap:8px;margin:9px 0 13px}
     .journey-shortcuts button{flex:1;background:#fff7f5;border:1px solid #eedbd4;border-radius:18px;padding:10px 7px;font-size:12px;font-weight:900;color:#ac7383;box-shadow:0 3px 12px rgba(125,83,82,.05)}
@@ -628,7 +681,7 @@ body.shared-editing .shared-edit-btn{display:inline-flex!important;align-items:c
     @media print{.now-pin,.timeline-rail,.live-panel,.journey-shortcuts{display:none!important}}
 </style></head><body><main><header><div>🌸 📷 🌊</div><h1>かえでとゆかの母娘旅行 in尾道</h1><p>かえで と ゆか　♡　2026.11.28 — 11.29</p></header>${groups}<p style="text-align:center;margin:40px">ふたりの思い出は、ずっと宝物 ♡</p></main></body></html>`}
   function makeBackup(){const data={app:'onomichi-mother-daughter-trip',version:2,exportedAt:new Date().toISOString(),expenses,checks,packs,memo:$('#tripMemo').value,photos};downloadBlob(new Blob([JSON.stringify(data)],{type:'application/json'}),'尾道旅行_写真と費用のバックアップ.json')}
-  async function importBackup(file){busy(true);try{if(file.size>100*1024*1024)throw new Error('容量が大きすぎます');const data=JSON.parse(await file.text());if(data.app!=='onomichi-mother-daughter-trip'||!Array.isArray(data.photos))throw new Error('このサイト用のバックアップではありません');if(!confirm('バックアップの費用・持ち物・メモを置き換えて、写真を追加しますか？'))return;expenses=Array.isArray(data.expenses)?data.expenses:[];checks=data.checks&&typeof data.checks==='object'?data.checks:{};packs=Array.isArray(data.packs)?data.packs:packs;setLS('expenses',expenses);setLS('checks',checks);setLS('packs',packs);$('#tripMemo').value=String(data.memo||'');setLS('memo',$('#tripMemo').value);for(const p of data.photos){if(typeof p.id==='string'&&typeof p.spotId==='string'&&typeof p.dataUrl==='string'&&p.dataUrl.startsWith('data:image/'))await putPhoto(p)}photos=await getAllPhotos();renderAll();toast('🌷 バックアップを読み込みました')}catch(e){console.error(e);toast('読み込めませんでした：ファイルを確認してね')}finally{busy(false);$('#importBackup').value=''}}
+  async function importBackup(file){busy(true);try{if(file.size>100*1024*1024)throw new Error('容量が大きすぎます');const data=JSON.parse(await file.text());if(data.app!=='onomichi-mother-daughter-trip'||!Array.isArray(data.photos))throw new Error('このサイト用のバックアップではありません');if(!confirm('バックアップの費用・持ち物・メモを置き換えて、写真を追加しますか？'))return;expenses=Array.isArray(data.expenses)?data.expenses:[];checks=data.checks&&typeof data.checks==='object'?data.checks:{};packs=Array.isArray(data.packs)?data.packs:packs;setLS('expenses',expenses);setLS('checks',checks);setLS('packs',packs);$('#tripMemo').value=String(data.memo||'');setLS('memo',$('#tripMemo').value);for(const p of data.photos){if(typeof p.id==='string'&&typeof p.spotId==='string'&&typeof p.dataUrl==='string'&&p.dataUrl.startsWith('data:image/'))await putPhoto(p)}localPhotos=await getAllPhotos();syncPhotoView();renderAll();toast('🌷 バックアップを読み込みました。共有するには「このスマホの写真をみんなに共有」を押してね')}catch(e){console.error(e);toast('読み込めませんでした：ファイルを確認してね')}finally{busy(false);$('#importBackup').value=''}}
   function renderAll(){renderTimeline();renderAlbum();renderExpenses();renderPacks()}
   window.OnomichiTripBridge={
   getDefaults:()=>DEFAULT_STOPS.map(s=>{const kind=TRAIN_IDS.has(s.id)?'train':BUS_IDS.has(s.id)?'bus':'other';return {...s,kind,...(TRAVEL_TIMES[s.id]?{transport:{...TRAVEL_TIMES[s.id]}}:{})}}),
@@ -655,15 +708,44 @@ body.shared-editing .shared-edit-btn{display:inline-flex!important;align-items:c
   window.addEventListener('resize',()=>requestAnimationFrame(updateLive));
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateLive()});
   setInterval(()=>{if(!document.hidden)updateLive()},15000);
-  document.addEventListener('click',async e=>{const add=e.target.closest('[data-addphoto]');if(add){pendingPhotoSpot=add.dataset.addphoto;$('#photoInput').click();return}const camera=e.target.closest('[data-camera]');if(camera){pendingPhotoSpot=camera.dataset.camera;$('#cameraInput').click();return}const check=e.target.closest('[data-check]');if(check){checks[check.dataset.check]=check.checked;setLS('checks',checks);renderTimeline();return}const photo=e.target.closest('[data-preview]');if(photo){const p=photos.find(x=>x.id===photo.dataset.preview);if(p){$('#previewImg').src=p.dataUrl;$('#previewCaption').textContent=(p.caption||'')+'　📍 '+stopName(p.spotId);$('#preview').classList.add('open')}return}const delPhoto=e.target.closest('[data-delphoto]');if(delPhoto){if(!confirm('この写真をアルバムから削除する？'))return;await removePhoto(delPhoto.dataset.delphoto);photos=photos.filter(x=>x.id!==delPhoto.dataset.delphoto);renderAlbum();renderTimeline();toast('写真を削除したよ');return}const delExpense=e.target.closest('[data-delexpense]');if(delExpense){if(!confirm('この支出を削除する？'))return;expenses=expenses.filter(x=>x.id!==delExpense.dataset.delexpense);setLS('expenses',expenses);renderExpenses();return}const pack=e.target.closest('[data-pack]');if(pack){packs[Number(pack.dataset.pack)].done=pack.checked;setLS('packs',packs);renderPacks();return}const go=e.target.closest('[data-go]');if(go)navigate(go.dataset.go)});
-  document.addEventListener('change',async e=>{const caption=e.target.closest('[data-caption]');if(caption){const p=photos.find(x=>x.id===caption.dataset.caption);if(p){p.caption=caption.value.slice(0,250);await putPhoto(p);renderAlbum();toast('コメントを保存したよ')}}});
+  document.addEventListener('click',async e=>{const add=e.target.closest('[data-addphoto]');if(add){pendingPhotoSpot=add.dataset.addphoto;$('#photoInput').click();return}const camera=e.target.closest('[data-camera]');if(camera){pendingPhotoSpot=camera.dataset.camera;$('#cameraInput').click();return}const check=e.target.closest('[data-check]');if(check){checks[check.dataset.check]=check.checked;setLS('checks',checks);renderTimeline();return}const photo=e.target.closest('[data-preview]');if(photo){const p=photos.find(x=>x.id===photo.dataset.preview);if(p){$('#previewImg').src=p.dataUrl;$('#previewCaption').textContent=(p.caption||'')+'　📍 '+stopName(p.spotId);$('#preview').classList.add('open')}return}const delPhoto=e.target.closest('[data-delphoto]');if(delPhoto){
+    const id=delPhoto.dataset.delphoto;
+    if(!confirm('この写真をアルバムから削除する？ 共有済みなら他のスマホからも消えます。'))return;
+    try{
+      if(window.OnomichiPhotoUI.isRemote(id)){
+        if(!window.OnomichiPhotoCloud?.ready?.()){toast('共有の接続ができていないため削除できません');return}
+        await window.OnomichiPhotoCloud.remove(id);
+        remotePhotos=remotePhotos.filter(x=>x.id!==id);
+      }
+      if(localPhotos.some(p=>p.id===id)){
+        await removePhoto(id);
+        localPhotos=localPhotos.filter(x=>x.id!==id);
+      }
+      syncPhotoView();renderAlbum();renderTimeline();toast('写真を削除したよ');
+    }catch(error){console.error(error);toast('削除できませんでした。写真の投稿者か通信状態を確認してね')}
+    return;
+  }const delExpense=e.target.closest('[data-delexpense]');if(delExpense){if(!confirm('この支出を削除する？'))return;expenses=expenses.filter(x=>x.id!==delExpense.dataset.delexpense);setLS('expenses',expenses);renderExpenses();return}const pack=e.target.closest('[data-pack]');if(pack){packs[Number(pack.dataset.pack)].done=pack.checked;setLS('packs',packs);renderPacks();return}const go=e.target.closest('[data-go]');if(go)navigate(go.dataset.go)});
+  document.addEventListener('change',async e=>{const caption=e.target.closest('[data-caption]');if(caption){const id=caption.dataset.caption;
+    const p=photos.find(x=>x.id===id);
+    if(p){
+      const value=caption.value.slice(0,250);
+      try{
+        const local=localPhotos.find(x=>x.id===id);
+        if(local){local.caption=value;await putPhoto(local)}
+        if(window.OnomichiPhotoUI.isRemote(id)){
+          if(!window.OnomichiPhotoCloud?.ready?.())throw new Error('共有アルバムに接続できていません');
+          await window.OnomichiPhotoCloud.updateCaption(id,value);
+        }
+        p.caption=value;syncPhotoView();renderAlbum();toast('コメントを保存したよ');
+      }catch(error){console.warn(error);toast('コメントの共有に失敗したよ。通信状態を確認してね')}
+    }}});
   $('#photoInput').addEventListener('change',e=>handlePhotos(e.target.files));$('#cameraInput').addEventListener('change',e=>handlePhotos(e.target.files));
   $('#expenseForm').addEventListener('submit',e=>{e.preventDefault();const name=$('#expenseName').value.trim(),amount=Number($('#expenseAmount').value);if(!name||!Number.isFinite(amount)||amount<=0||amount>1e7){toast('項目と金額を確認してね');return}expenses.push({id:uuid(),name,amount:Math.round(amount),category:$('#expenseCategory').value,payer:$('#expensePayer').value,date:$('#expenseDate').value,createdAt:Date.now()});setLS('expenses',expenses);renderExpenses();$('#expenseName').value='';$('#expenseAmount').value='';toast('🪙 旅費を記録したよ！')});
   $('#addTrainExpense').addEventListener('click',()=>{$('#expenseName').value='帰りのこだま953号（2人分）';$('#expenseAmount').value='17160';$('#expenseCategory').value='交通';$('#expenseDate').value='2';$('#expensePayer').focus();toast('払った人を選んで「追加」してね')});
   $('#tripMemo').value=getLS('memo','');$('#tripMemo').addEventListener('input',e=>setLS('memo',e.target.value));$('#exportBackup').addEventListener('click',makeBackup);$('#importBackup').addEventListener('change',e=>{if(e.target.files[0])importBackup(e.target.files[0])});
   $('#albumSave').addEventListener('click',()=>{if(!photos.length){toast('先に写真を追加してね');return}downloadBlob(new Blob([albumHTML()],{type:'text/html;charset=utf-8'}),'初_母娘の尾道旅行_思い出アルバム.html');toast('📕 写真入りアルバムを保存したよ')});
   $('#printAlbum').addEventListener('click',()=>{if(!photos.length){toast('先に写真を追加してね');return}window.print()});$('#closePreview').addEventListener('click',()=>$('#preview').classList.remove('open'));$('#preview').addEventListener('click',e=>{if(e.target===$('#preview'))$('#preview').classList.remove('open')});document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#preview').classList.remove('open')});$('#topBtn').addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
-  (async()=>{try{photos=await getAllPhotos()}catch(e){console.warn(e);toast('写真保存には通常のブラウザを使用してね')}renderAll()})();
+  (async()=>{try{localPhotos=await getAllPhotos();syncPhotoView()}catch(e){console.warn(e);toast('写真保存には通常のブラウザを使用してね')}renderAll()})();
   </script>
   <script type="module" src="./firebase-sync.js"></script>
 </body></html>
